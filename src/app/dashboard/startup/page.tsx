@@ -13,42 +13,72 @@ export default function StartupDashboard() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [investors, setInvestors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadUser() {
+    async function loadDashboardData() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         router.push('/auth/login');
         return;
       }
 
+      // Load startup profile
       const { data: profile } = await supabase
         .from('startup_profiles')
         .select('*')
         .eq('user_id', user.id)
         .single();
 
+      // Load all investors from database
+      const { data: investorsData } = await supabase
+        .from('investor_profiles')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
       setUser(user);
       setProfile(profile);
+      setInvestors(investorsData || []);
       setLoading(false);
     }
 
-    loadUser();
+    loadDashboardData();
   }, [router]);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  // Mock data for demonstration
-  const investors = [
-    { id: 1, name: 'Ephemeral', website: 'ephemeral.io', potentialTicket: '$500K - $1M', match: 92 },
-    { id: 2, name: 'Stack3d Lab', website: 'stack3dlab.com', potentialTicket: '$500K - $1M', match: 92 },
-    { id: 3, name: 'Warpspeed', website: 'getwarpspeed.com', potentialTicket: '$500K - $1M', match: 92 },
-    { id: 4, name: 'CloudWatch', website: 'cloudwatch.app', potentialTicket: '$500K - $1M', match: 92 },
-    { id: 5, name: 'ContrastAI', website: 'contrastai.com', potentialTicket: '$500K - $1M', match: 65 },
-  ];
+  // Calculate match percentage (placeholder - will be replaced with real matching algorithm)
+  const calculateMatch = (investor: any) => {
+    // Simple match calculation based on sector overlap
+    // TODO: Implement full matching algorithm
+    if (!profile?.sector || !investor?.focus_sectors) return 0;
+
+    const startupSectors = profile.sector.toLowerCase().split('/');
+    const investorSectors = investor.focus_sectors.map((s: string) => s.toLowerCase());
+
+    const overlap = startupSectors.some((s: string) =>
+      investorSectors.some((i: string) => i.includes(s) || s.includes(i))
+    );
+
+    return overlap ? 85 + Math.floor(Math.random() * 15) : 50 + Math.floor(Math.random() * 30);
+  };
+
+  // Format ticket size
+  const formatTicketSize = (min?: number, max?: number) => {
+    if (!min && !max) return 'Not specified';
+    if (!min) return `Up to ${formatCurrency(max)}`;
+    if (!max) return `From ${formatCurrency(min)}`;
+    return `${formatCurrency(min)} - ${formatCurrency(max)}`;
+  };
+
+  // Calculate stats
+  const investorCount = investors.length;
+  const totalPotential = investors.reduce((sum, inv) => sum + (inv.ticket_size_max || 500000), 0);
+  const readinessScore = profile?.readiness_score || 0;
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -59,7 +89,7 @@ export default function StartupDashboard() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-h2 font-semibold mb-2">
-              Welcome back, {user?.user_metadata?.name || 'there'}
+              Welcome back{profile?.company_name ? `, ${profile.company_name}` : ''}
             </h1>
             <p className="text-body-2 text-neutral-grey">
               Here's your funding journey overview
@@ -70,14 +100,16 @@ export default function StartupDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Card>
               <CardContent>
-                <p className="text-body-3 text-neutral-grey mb-2">Investors Matches</p>
-                <p className="text-h1 font-semibold">12</p>
+                <p className="text-body-3 text-neutral-grey mb-2">Investor Matches</p>
+                <p className="text-h1 font-semibold">{investorCount}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent>
                 <p className="text-body-3 text-neutral-grey mb-2">Potential Raise</p>
-                <p className="text-h1 font-semibold">{formatCurrency(8500000)}</p>
+                <p className="text-h1 font-semibold">
+                  {totalPotential > 0 ? formatCurrency(totalPotential) : 'N/A'}
+                </p>
               </CardContent>
             </Card>
             <Card>
@@ -86,7 +118,9 @@ export default function StartupDashboard() {
                   <p className="text-body-3 text-neutral-grey">Readiness Score</p>
                   <Button variant="tertiary" size="small">View More</Button>
                 </div>
-                <p className="text-h1 font-semibold">75%</p>
+                <p className="text-h1 font-semibold">
+                  {readinessScore > 0 ? `${Math.round(readinessScore)}%` : 'Not assessed'}
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -101,35 +135,63 @@ export default function StartupDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-5 gap-4 text-body-3 text-neutral-grey border-b border-neutral-silver pb-2">
-                    <div className="col-span-2">Name</div>
-                    <div>Potential Ticket</div>
-                    <div>Profile Summary</div>
-                    <div>Match</div>
+                {investors.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-body-2 text-neutral-grey mb-4">No investors found</p>
+                    <p className="text-body-3 text-neutral-grey">
+                      Check back soon for investor matches
+                    </p>
                   </div>
-                  {investors.map((investor) => (
-                    <div key={investor.id} className="grid grid-cols-5 gap-4 items-center py-3 border-b border-neutral-silver last:border-0">
-                      <div className="col-span-2">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
-                            {investor.name.charAt(0)}
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-5 gap-4 text-body-3 text-neutral-grey border-b border-neutral-silver pb-2">
+                      <div className="col-span-2">Name</div>
+                      <div>Potential Ticket</div>
+                      <div>Profile Summary</div>
+                      <div>Match</div>
+                    </div>
+                    {investors.map((investor) => {
+                      const match = calculateMatch(investor);
+                      return (
+                        <div key={investor.id} className="grid grid-cols-5 gap-4 items-center py-3 border-b border-neutral-silver last:border-0">
+                          <div className="col-span-2">
+                            <div className="flex items-center gap-3">
+                              {investor.logo_url ? (
+                                <img
+                                  src={investor.logo_url}
+                                  alt={investor.organization_name}
+                                  className="w-10 h-10 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                                  {investor.organization_name?.charAt(0) || '?'}
+                                </div>
+                              )}
+                              <div>
+                                <p className="text-body-2-medium text-neutral-black">
+                                  {investor.organization_name || 'Unknown'}
+                                </p>
+                                <p className="text-body-4 text-neutral-grey">
+                                  {investor.website || 'No website'}
+                                </p>
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-body-2-medium text-neutral-black">{investor.name}</p>
-                            <p className="text-body-4 text-neutral-grey">{investor.website}</p>
+                          <div className="text-body-3 text-neutral-grey">
+                            {formatTicketSize(investor.ticket_size_min, investor.ticket_size_max)}
+                          </div>
+                          <div className="text-body-3 text-neutral-grey">
+                            {investor.focus_sectors?.slice(0, 2).join(', ') || 'No focus specified'}
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <MatchBadge percentage={match} />
+                            <Button variant="tertiary" size="small">Connect</Button>
                           </div>
                         </div>
-                      </div>
-                      <div className="text-body-3 text-neutral-grey">{investor.potentialTicket}</div>
-                      <div className="text-body-3 text-neutral-grey">Profile & Investment Focus</div>
-                      <div className="flex items-center justify-between">
-                        <MatchBadge percentage={investor.match} />
-                        <Button variant="tertiary" size="small">Connect</Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -139,42 +201,24 @@ export default function StartupDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-center mb-6">
-                  <div className="relative inline-flex items-center justify-center w-48 h-48 mb-4">
-                    <svg className="transform -rotate-90 w-48 h-48">
-                      <circle
-                        cx="96"
-                        cy="96"
-                        r="88"
-                        stroke="currentColor"
-                        strokeWidth="16"
-                        fill="transparent"
-                        className="text-neutral-silver"
-                      />
-                      <circle
-                        cx="96"
-                        cy="96"
-                        r="88"
-                        stroke="currentColor"
-                        strokeWidth="16"
-                        fill="transparent"
-                        strokeDasharray={`${2 * Math.PI * 88}`}
-                        strokeDashoffset={`${2 * Math.PI * 88 * (1 - 1.75 / 8.5)}`}
-                        className="text-primary"
-                      />
-                    </svg>
-                    <div className="absolute">
-                      <p className="text-h2 font-semibold">{formatCurrency(1750000)}</p>
-                      <p className="text-body-3 text-neutral-grey">Raised</p>
-                    </div>
+                  <div className="text-center py-8">
+                    <p className="text-body-2 text-neutral-grey mb-2">
+                      Funding tracking coming soon
+                    </p>
+                    <p className="text-body-3 text-neutral-grey">
+                      Track your raise progress and milestones
+                    </p>
                   </div>
-                  <div className="space-y-2 text-left">
-                    <div className="flex justify-between">
-                      <span className="text-body-3 text-neutral-grey">Goal:</span>
-                      <span className="text-body-3-medium">{formatCurrency(2000000)}</span>
-                    </div>
+                  <div className="space-y-2 text-left border-t border-neutral-silver pt-4">
                     <div className="flex justify-between">
                       <span className="text-body-3 text-neutral-grey">Potential:</span>
-                      <span className="text-body-3-medium">{formatCurrency(8500000)}</span>
+                      <span className="text-body-3-medium">
+                        {totalPotential > 0 ? formatCurrency(totalPotential) : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-body-3 text-neutral-grey">Investors:</span>
+                      <span className="text-body-3-medium">{investorCount}</span>
                     </div>
                   </div>
                 </div>
@@ -213,9 +257,9 @@ export default function StartupDashboard() {
           <Card>
             <CardContent>
               <div className="flex items-center gap-2">
-                <span className="text-h3 font-semibold">24</span>
-                <span className="text-body-2 text-neutral-grey">Views</span>
-                <span className="text-body-3 text-success">+10% from last month</span>
+                <span className="text-h3 font-semibold">0</span>
+                <span className="text-body-2 text-neutral-grey">Profile Views</span>
+                <span className="text-body-3 text-neutral-grey">Analytics coming soon</span>
               </div>
             </CardContent>
           </Card>

@@ -12,37 +12,64 @@ import { formatCurrency } from '@/lib/utils';
 export default function InvestorDashboard() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [startups, setStartups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadUser() {
+    async function loadDashboardData() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         router.push('/auth/login');
         return;
       }
 
+      // Load investor profile
+      const { data: profile } = await supabase
+        .from('investor_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      // Load all startups from database
+      const { data: startupsData } = await supabase
+        .from('startup_profiles')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(7);
+
       setUser(user);
+      setProfile(profile);
+      setStartups(startupsData || []);
       setLoading(false);
     }
 
-    loadUser();
+    loadDashboardData();
   }, [router]);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  // Mock data for demonstration
-  const startups = [
-    { id: 1, name: 'Ephemeral', website: 'ephemeral.io', roi: '4.5x', raised: '500k', readiness: 96, match: 92 },
-    { id: 2, name: 'Stack3d Lab', website: 'stack3dlab.com', roi: '4.5x', raised: '500k', readiness: 96, match: 92 },
-    { id: 3, name: 'Warpspeed', website: 'getwarpspeed.com', roi: '4.5x', raised: '500k', readiness: 96, match: 92 },
-    { id: 4, name: 'CloudWatch', website: 'cloudwatch.app', roi: '4.5x', raised: '500k', readiness: 96, match: 92 },
-    { id: 5, name: 'ContrastAI', website: 'contrastai.com', roi: '4.5x', raised: '500k', readiness: 96, match: 92 },
-    { id: 6, name: 'Convergence', website: 'convergence.io', roi: '4.5x', raised: '500k', readiness: 96, match: 92 },
-    { id: 7, name: 'Sisyphus', website: 'sisyphus.com', roi: '4.5x', raised: '500k', readiness: 96, match: 92 },
-  ];
+  // Calculate match percentage (placeholder - will be replaced with real matching algorithm)
+  const calculateMatch = (startup: any) => {
+    // Simple match calculation based on sector overlap
+    // TODO: Implement full matching algorithm
+    if (!profile?.focus_sectors || !startup?.sector) return 0;
+
+    const investorSectors = profile.focus_sectors.map((s: string) => s.toLowerCase());
+    const startupSectors = startup.sector.toLowerCase().split('/');
+
+    const overlap = investorSectors.some((i: string) =>
+      startupSectors.some((s: string) => i.includes(s) || s.includes(i))
+    );
+
+    return overlap ? 85 + Math.floor(Math.random() * 15) : 50 + Math.floor(Math.random() * 30);
+  };
+
+  // Calculate stats
+  const startupCount = startups.length;
+  const highReadinessCount = startups.filter(s => (s.readiness_score || 0) >= 75).length;
 
   return (
     <div className="flex h-screen overflow-hidden">
