@@ -104,10 +104,11 @@ export async function POST(request: NextRequest) {
     try {
       console.log('Importing pdf2json...');
       // Use pdf2json which is designed for Node.js/serverless environments
-      const PDFParser = (await import('pdf2json')).default || (await import('pdf2json') as any);
+      const pdf2jsonModule = await import('pdf2json');
+      const PDFParser = (pdf2jsonModule as any).default || pdf2jsonModule;
       
-      // Create parser instance
-      const pdfParser = new PDFParser(null, 1);
+      // Create parser instance (constructor takes no arguments or optional boolean)
+      const pdfParser = new PDFParser();
       
       // Set up promise to wait for parsing completion
       const parsePromise = new Promise<string>((resolve, reject) => {
