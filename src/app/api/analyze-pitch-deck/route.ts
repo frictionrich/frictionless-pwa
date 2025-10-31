@@ -136,11 +136,11 @@ export async function POST(request: NextRequest) {
         };
         
         DOMMatrixPolyfill.fromMatrix = function(other?: any) {
-          return new DOMMatrixPolyfill();
+          return new (DOMMatrixPolyfill as any)();
         };
         
         DOMMatrixPolyfill.fromFloat32Array = function(array: Float32Array) {
-          return new DOMMatrixPolyfill();
+          return new (DOMMatrixPolyfill as any)();
         };
         
         (globalThis as any).DOMMatrix = DOMMatrixPolyfill;
