@@ -16,7 +16,12 @@
       "Bash(.gitignore)",
       "Bash(npm run dev:*)",
       "Bash(npx kill-port:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(dir /b \"C:\\Projects\\frictionless\\public\")",
+      "Bash(findstr:*)",
+      "Bash(dir:*)",
+      "Bash(where:*)",
+      "Bash(node scripts/resize-icons.js:*)"
     ],
     "deny": [],
     "ask": []
