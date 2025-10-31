@@ -13,7 +13,7 @@ export default function StartupDashboard() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
-  const [investors, setInvestors] = useState<any[]>([]);
+  const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,16 +31,31 @@ export default function StartupDashboard() {
         .eq('user_id', user.id)
         .single();
 
-      // Load all investors from database
-      const { data: investorsData } = await supabase
-        .from('investor_profiles')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
+      // Load matches for this startup with investor details
+      const { data: matchesData } = await supabase
+        .from('matches')
+        .select(`
+          *,
+          investor:investor_id (
+            id,
+            user_id,
+            organization_name,
+            website,
+            logo_url,
+            focus_sectors,
+            focus_stages,
+            ticket_size_min,
+            ticket_size_max,
+            tagline
+          )
+        `)
+        .eq('startup_id', user.id)
+        .order('match_percentage', { ascending: false })
+        .limit(7);
 
       setUser(user);
       setProfile(profile);
-      setInvestors(investorsData || []);
+      setMatches(matchesData || []);
       setLoading(false);
     }
 
@@ -50,22 +65,6 @@ export default function StartupDashboard() {
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
-
-  // Calculate match percentage (placeholder - will be replaced with real matching algorithm)
-  const calculateMatch = (investor: any) => {
-    // Simple match calculation based on sector overlap
-    // TODO: Implement full matching algorithm
-    if (!profile?.sector || !investor?.focus_sectors) return 0;
-
-    const startupSectors = profile.sector.toLowerCase().split('/');
-    const investorSectors = investor.focus_sectors.map((s: string) => s.toLowerCase());
-
-    const overlap = startupSectors.some((s: string) =>
-      investorSectors.some((i: string) => i.includes(s) || s.includes(i))
-    );
-
-    return overlap ? 85 + Math.floor(Math.random() * 15) : 50 + Math.floor(Math.random() * 30);
-  };
 
   // Format ticket size
   const formatTicketSize = (min?: number, max?: number) => {
@@ -77,8 +76,11 @@ export default function StartupDashboard() {
   };
 
   // Calculate stats
-  const investorCount = investors.length;
-  const totalPotential = investors.reduce((sum, inv) => sum + (inv.ticket_size_max || 500000), 0);
+  const matchCount = matches.length;
+  const totalPotential = matches.reduce((sum, match) => {
+    const investor = match.investor as any;
+    return sum + (investor?.ticket_size_max || 500000);
+  }, 0);
   const readinessScore = profile?.readiness_score || 0;
 
   return (
@@ -102,7 +104,7 @@ export default function StartupDashboard() {
             <Card>
               <CardContent>
                 <p className="text-body-3 text-neutral-grey mb-2">Investor Matches</p>
-                <p className="text-h1 font-semibold">{investorCount}</p>
+                <p className="text-h1 font-semibold">{matchCount}</p>
               </CardContent>
             </Card>
             <Card>
@@ -136,11 +138,11 @@ export default function StartupDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                {investors.length === 0 ? (
+                {matches.length === 0 ? (
                   <div className="text-center py-12">
-                    <p className="text-body-2 text-neutral-grey mb-4">No investors found</p>
+                    <p className="text-body-2 text-neutral-grey mb-4">No investor matches yet</p>
                     <p className="text-body-3 text-neutral-grey">
-                      Check back soon for investor matches
+                      Complete your profile to get matched with investors
                     </p>
                   </div>
                 ) : (
@@ -151,10 +153,12 @@ export default function StartupDashboard() {
                       <div>Profile Summary</div>
                       <div>Match</div>
                     </div>
-                    {investors.map((investor) => {
-                      const match = calculateMatch(investor);
+                    {matches.map((match) => {
+                      const investor = match.investor as any;
+                      if (!investor) return null;
+
                       return (
-                        <div key={investor.id} className="grid grid-cols-5 gap-4 items-center py-3 border-b border-neutral-silver last:border-0">
+                        <div key={match.id} className="grid grid-cols-5 gap-4 items-center py-3 border-b border-neutral-silver last:border-0">
                           <div className="col-span-2">
                             <div className="flex items-center gap-3">
                               {investor.logo_url ? (
@@ -185,7 +189,7 @@ export default function StartupDashboard() {
                             {investor.focus_sectors?.slice(0, 2).join(', ') || 'No focus specified'}
                           </div>
                           <div className="flex items-center justify-between">
-                            <MatchBadge percentage={match} />
+                            <MatchBadge percentage={match.match_percentage} />
                             <Button variant="tertiary" size="small">Connect</Button>
                           </div>
                         </div>
@@ -219,7 +223,7 @@ export default function StartupDashboard() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-body-3 text-neutral-grey">Investors:</span>
-                      <span className="text-body-3-medium">{investorCount}</span>
+                      <span className="text-body-3-medium">{matchCount}</span>
                     </div>
                   </div>
                 </div>
