@@ -41,17 +41,19 @@ export default function StartupOnboardingPage() {
       console.log('User:', user);
       if (!user) throw new Error('Not authenticated');
 
-      // Create profile
+      // Create or update profile using upsert
       console.log('Creating profile...');
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
+        .upsert({
           id: user.id,
           email: user.email!,
           role: 'startup',
+        }, {
+          onConflict: 'id'
         });
 
-      if (profileError && profileError.code !== '23505') {
+      if (profileError) {
         console.error('Profile error:', profileError);
         throw profileError;
       }
