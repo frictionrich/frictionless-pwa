@@ -99,99 +99,43 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Extract text from PDF using pdf-parse (dynamic import handles ESM module)
+    // Extract text from PDF using pdfjs-dist (Mozilla's PDF.js - Node.js compatible)
     let content: string;
     try {
-      // Polyfill DOMMatrix and related DOM APIs for Node.js (pdf-parse dependency requires them)
-      if (typeof globalThis.DOMMatrix === 'undefined') {
-        // DOMMatrix polyfill - must be callable both as constructor and function
-        function DOMMatrixPolyfill(this: any, init?: string | number[]) {
-          if (!(this instanceof DOMMatrixPolyfill)) {
-            return new (DOMMatrixPolyfill as any)(init);
-          }
-          (this as any).a = 1;
-          (this as any).b = 0;
-          (this as any).c = 0;
-          (this as any).d = 1;
-          (this as any).e = 0;
-          (this as any).f = 0;
-        }
-        
-        DOMMatrixPolyfill.prototype = {
-          a: 1,
-          b: 0,
-          c: 0,
-          d: 1,
-          e: 0,
-          f: 0,
-          multiply(other: any) {
-            return new (DOMMatrixPolyfill as any)();
-          },
-          translate(x: number, y: number) {
-            return new (DOMMatrixPolyfill as any)();
-          },
-          scale(x: number, y?: number) {
-            return new (DOMMatrixPolyfill as any)();
-          }
-        };
-        
-        DOMMatrixPolyfill.fromMatrix = function(other?: any) {
-          return new (DOMMatrixPolyfill as any)();
-        };
-        
-        DOMMatrixPolyfill.fromFloat32Array = function(array: Float32Array) {
-          return new (DOMMatrixPolyfill as any)();
-        };
-        
-        (globalThis as any).DOMMatrix = DOMMatrixPolyfill;
-        (globalThis as any).DOMMatrixReadOnly = DOMMatrixPolyfill;
-      }
-      
-      // Also polyfill DOMPoint if needed - also callable as function
-      if (typeof globalThis.DOMPoint === 'undefined') {
-        function DOMPointPolyfill(this: any, x = 0, y = 0, z = 0, w = 1) {
-          if (!(this instanceof DOMPointPolyfill)) {
-            return new (DOMPointPolyfill as any)(x, y, z, w);
-          }
-          (this as any).x = x;
-          (this as any).y = y;
-          (this as any).z = z;
-          (this as any).w = w;
-        }
-        (globalThis as any).DOMPoint = DOMPointPolyfill;
-      }
-      
-      console.log('Importing pdf-parse...');
-      const pdfParseModule = await import('pdf-parse');
-      console.log('pdf-parse module imported:', typeof pdfParseModule, Object.keys(pdfParseModule));
-      
-      // pdf-parse v2.4.5 is ESM-only - try different ways to access the function
-      let pdfParse: any;
-      const moduleAny = pdfParseModule as any;
-      
-      if (typeof pdfParseModule === 'function') {
-        pdfParse = pdfParseModule;
-      } else if (moduleAny.default && typeof moduleAny.default === 'function') {
-        pdfParse = moduleAny.default;
-      } else {
-        // Try to find a function export in the module
-        const entries = Object.entries(pdfParseModule);
-        const funcEntry = entries.find(([_, value]) => typeof value === 'function');
-        if (funcEntry) {
-          pdfParse = funcEntry[1];
-        } else {
-          // Last resort: use the module itself if it might be callable
-          pdfParse = pdfParseModule;
+      console.log('Importing pdfjs-dist...');
+      // Use pdfjs-dist which is designed for Node.js environments
+      // Try different import paths based on version
+      let pdfjsLib: any;
+      try {
+        pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js');
+      } catch {
+        try {
+          pdfjsLib = await import('pdfjs-dist/build/pdf.js');
+        } catch {
+          pdfjsLib = await import('pdfjs-dist');
         }
       }
       
-      if (typeof pdfParse !== 'function') {
-        throw new Error(`pdf-parse is not a function. Got: ${typeof pdfParse}, module keys: ${Object.keys(pdfParseModule).join(', ')}`);
+      // Load the PDF document
+      console.log('Loading PDF document, buffer size:', buffer.length);
+      const loadingTask = pdfjsLib.getDocument({ data: buffer });
+      const pdfDocument = await loadingTask.promise;
+      
+      // Extract text from all pages
+      let fullText = '';
+      const numPages = pdfDocument.numPages;
+      console.log(`PDF has ${numPages} pages`);
+      
+      for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+        const page = await pdfDocument.getPage(pageNum);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items
+          .map((item: any) => item.str)
+          .join(' ');
+        fullText += pageText + '\n';
       }
       
-      console.log('Calling pdfParse with buffer size:', buffer.length);
-      const pdfData = await pdfParse(buffer);
-      content = pdfData.text || '';
+      content = fullText.trim();
       console.log('PDF text extracted, length:', content.length);
     } catch (parseError: any) {
       console.error('PDF parsing error:', parseError);
