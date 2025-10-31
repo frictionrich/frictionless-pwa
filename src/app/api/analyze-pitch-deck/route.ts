@@ -105,17 +105,17 @@ export async function POST(request: NextRequest) {
       // Polyfill DOMMatrix and related DOM APIs for Node.js (pdf-parse dependency requires them)
       if (typeof globalThis.DOMMatrix === 'undefined') {
         // DOMMatrix polyfill - must be callable both as constructor and function
-        const DOMMatrixPolyfill = function DOMMatrix(this: any, init?: string | number[]) {
-          if (!(this instanceof DOMMatrix)) {
-            return new (DOMMatrix as any)(init);
+        function DOMMatrixPolyfill(this: any, init?: string | number[]) {
+          if (!(this instanceof DOMMatrixPolyfill)) {
+            return new (DOMMatrixPolyfill as any)(init);
           }
-          this.a = 1;
-          this.b = 0;
-          this.c = 0;
-          this.d = 1;
-          this.e = 0;
-          this.f = 0;
-        } as any;
+          (this as any).a = 1;
+          (this as any).b = 0;
+          (this as any).c = 0;
+          (this as any).d = 1;
+          (this as any).e = 0;
+          (this as any).f = 0;
+        }
         
         DOMMatrixPolyfill.prototype = {
           a: 1,
@@ -149,15 +149,15 @@ export async function POST(request: NextRequest) {
       
       // Also polyfill DOMPoint if needed - also callable as function
       if (typeof globalThis.DOMPoint === 'undefined') {
-        const DOMPointPolyfill = function DOMPoint(this: any, x = 0, y = 0, z = 0, w = 1) {
-          if (!(this instanceof DOMPoint)) {
+        function DOMPointPolyfill(this: any, x = 0, y = 0, z = 0, w = 1) {
+          if (!(this instanceof DOMPointPolyfill)) {
             return new (DOMPointPolyfill as any)(x, y, z, w);
           }
-          this.x = x;
-          this.y = y;
-          this.z = z;
-          this.w = w;
-        } as any;
+          (this as any).x = x;
+          (this as any).y = y;
+          (this as any).z = z;
+          (this as any).w = w;
+        }
         (globalThis as any).DOMPoint = DOMPointPolyfill;
       }
       
