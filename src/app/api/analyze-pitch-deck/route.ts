@@ -95,9 +95,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Convert file to buffer
+    // Convert file to Uint8Array (pdfjs-dist requires Uint8Array, not Buffer)
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const uint8Array = new Uint8Array(arrayBuffer);
 
     // Extract text from PDF using pdfjs-dist (Mozilla's PDF.js - Node.js compatible)
     let content: string;
@@ -124,9 +124,9 @@ export async function POST(request: NextRequest) {
         throw new Error(`Could not find getDocument function. Module keys: ${Object.keys(pdfjsLib).join(', ')}`);
       }
       
-      // Load the PDF document
-      console.log('Loading PDF document, buffer size:', buffer.length);
-      const loadingTask = getDocument({ data: buffer });
+      // Load the PDF document (pdfjs-dist requires Uint8Array)
+      console.log('Loading PDF document, buffer size:', uint8Array.length);
+      const loadingTask = getDocument({ data: uint8Array });
       const pdfDocument = await loadingTask.promise;
       
       // Extract text from all pages
