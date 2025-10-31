@@ -1,2 +1,4 @@
 [] If signed in, redirect to dashboard
 [] Ensure deck is read and AI populates database
+[] go to onboarding flow if deck not updated
+[] add section for reuploading deck

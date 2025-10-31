@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import pdf from 'pdf-parse';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -62,14 +63,42 @@ Return ONLY valid JSON with no markdown formatting. Ensure all fields are popula
 
 export async function POST(request: NextRequest) {
   try {
-    const { content, fileName } = await request.json();
+    // Parse multipart/form-data
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
 
-    if (!content) {
+    if (!file) {
       return NextResponse.json(
-        { error: 'No content provided' },
+        { error: 'No file provided' },
         { status: 400 }
       );
     }
+
+    // Check if it's a PDF
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      return NextResponse.json(
+        { error: 'Only PDF files are supported for AI analysis' },
+        { status: 400 }
+      );
+    }
+
+    // Convert file to buffer
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Extract text from PDF using pdf-parse
+    const pdfData = await pdf(buffer);
+    const content = pdfData.text;
+
+    if (!content || content.trim().length < 100) {
+      return NextResponse.json(
+        { error: 'Could not extract enough text from PDF' },
+        { status: 400 }
+      );
+    }
+
+    console.log('Extracted text length:', content.length);
+    console.log('First 200 chars:', content.substring(0, 200));
 
     // Analyze with OpenAI
     const response = await openai.chat.completions.create({
@@ -81,7 +110,7 @@ export async function POST(request: NextRequest) {
         },
         {
           role: 'user',
-          content: `Analyze this pitch deck content:\n\nFile: ${fileName}\n\nContent:\n${content}`,
+          content: `Analyze this pitch deck content:\n\nFile: ${file.name}\n\nContent:\n${content}`,
         },
       ],
       temperature: 0.3,

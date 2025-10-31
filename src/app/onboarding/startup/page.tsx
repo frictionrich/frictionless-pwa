@@ -88,25 +88,15 @@ export default function StartupOnboardingPage() {
         if (fileExt?.toLowerCase() === 'pdf') {
           try {
             console.log('Starting AI analysis...');
-            const fileReader = new FileReader();
-            const fileContent = await new Promise<string>((resolve, reject) => {
-              fileReader.onload = () => {
-                const text = fileReader.result as string;
-                // Extract text content (simplified - in production use proper PDF parser)
-                resolve(text);
-              };
-              fileReader.onerror = reject;
-              fileReader.readAsText(formData.pitchDeckFile as File);
-            });
 
-            console.log('File read, calling API...');
+            // Send PDF file as multipart/form-data
+            const formDataToSend = new FormData();
+            formDataToSend.append('file', formData.pitchDeckFile as File);
+
+            console.log('Calling API with PDF file...');
             const analysisResponse = await fetch('/api/analyze-pitch-deck', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                content: fileContent,
-                fileName: formData.pitchDeckFile.name,
-              }),
+              body: formDataToSend, // Send as FormData, not JSON
             });
 
             console.log('API response status:', analysisResponse.status);
@@ -114,6 +104,8 @@ export default function StartupOnboardingPage() {
               const result = await analysisResponse.json();
               analysis = result.analysis;
               console.log('Analysis result:', analysis);
+            } else {
+              console.log('AI analysis failed with status:', analysisResponse.status);
             }
           } catch (analysisError) {
             console.error('AI analysis failed:', analysisError);
@@ -122,11 +114,11 @@ export default function StartupOnboardingPage() {
         }
       }
 
-      // Create startup profile with AI-extracted data
+      // Create or update startup profile with AI-extracted data using upsert
       console.log('Creating startup profile...');
       const { error: startupError } = await supabase
         .from('startup_profiles')
-        .insert({
+        .upsert({
           user_id: user.id,
           company_name: analysis?.company_name || formData.companyName,
           website: formData.website,
@@ -135,6 +127,8 @@ export default function StartupOnboardingPage() {
           sector: analysis?.industry || null,
           stage: analysis?.stage || null,
           readiness_score: analysis?.readiness_assessment?.overall_score || null,
+        }, {
+          onConflict: 'user_id'
         });
 
       if (startupError) {
