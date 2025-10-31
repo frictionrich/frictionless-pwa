@@ -167,17 +167,14 @@ export default function LoginPage() {
       </div>
 
       {/* Right side - Image */}
-      <div className="hidden lg:block lg:w-1/2 bg-gradient-to-br from-tint-3 to-tint-5">
-        <div className="h-full flex items-center justify-center p-12">
-          <div className="text-center">
-            <h2 className="text-h2 font-semibold text-neutral-black mb-4">
-              Connect with the right investors
-            </h2>
-            <p className="text-body-1 text-neutral-grey">
-              Matched. Measured. Monitored.
-            </p>
-          </div>
-        </div>
+      <div className="hidden lg:block lg:w-1/2 relative">
+        <Image
+          src="/startup-sidebar.png"
+          alt="Frictionless Platform"
+          fill
+          className="object-cover"
+          priority
+        />
       </div>
     </div>
   );
