@@ -23,7 +23,9 @@
       "Bash(where:*)",
       "Bash(node scripts/resize-icons.js:*)",
       "Bash(del:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(Select-String -Pattern \"(Compiled|error|Error)\" -Context 2,2)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
