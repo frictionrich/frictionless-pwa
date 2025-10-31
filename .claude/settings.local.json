@@ -25,7 +25,8 @@
       "Bash(del:*)",
       "Bash(rm:*)",
       "Bash(Select-String -Pattern \"(Compiled|error|Error)\" -Context 2,2)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(copy \"C:\\Projects\\frictionless\\figma\\startup-onboarding\\startup-sidebar.png\" \"C:\\Projects\\frictionless\\public\\startup-sidebar.png\")"
     ],
     "deny": [],
     "ask": []

@@ -229,16 +229,15 @@ function SignUpForm() {
       </div>
 
       {/* Right side - Image */}
-      <div className="hidden lg:block lg:w-1/2 bg-gradient-to-br from-tint-3 to-tint-5">
-        <div className="h-full flex items-center justify-center p-12">
-          <div className="text-center">
-            <h2 className="text-h2 font-semibold text-neutral-black mb-4">
-              Welcome to Frictionless
-            </h2>
-            <p className="text-body-1 text-neutral-grey">
-              Startup Funding, Reimagined
-            </p>
-          </div>
+      <div className="hidden lg:block lg:w-1/2 bg-gradient-to-br from-tint-3 to-tint-5 relative overflow-hidden">
+        <div className="h-full w-full relative">
+          <Image
+            src={role === 'startup' ? '/startup-sidebar.png' : '/investor-sidebar.png'}
+            alt={role === 'startup' ? 'Startup Onboarding' : 'Investor Onboarding'}
+            fill
+            className="object-cover"
+            priority
+          />
         </div>
       </div>
     </div>
