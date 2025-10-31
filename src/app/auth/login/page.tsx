@@ -22,19 +22,20 @@ export default function LoginPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleGoogleSignIn = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      if (error) throw error;
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
+  // TODO: Implement Google Sign In later
+  // const handleGoogleSignIn = async () => {
+  //   try {
+  //     const { error } = await supabase.auth.signInWithOAuth({
+  //       provider: 'google',
+  //       options: {
+  //         redirectTo: `${window.location.origin}/auth/callback`,
+  //       },
+  //     });
+  //     if (error) throw error;
+  //   } catch (err: any) {
+  //     setError(err.message);
+  //   }
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,7 +125,8 @@ export default function LoginPage() {
               Sign In
             </Button>
 
-            <div className="relative my-6">
+            {/* TODO: Implement Google Sign In later */}
+            {/* <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-neutral-grey-blue"></div>
               </div>
@@ -150,7 +152,7 @@ export default function LoginPage() {
               iconPosition="left"
             >
               Sign in with Google
-            </Button>
+            </Button> */}
           </form>
 
           <p className="mt-8 text-center text-body-3 text-neutral-grey">

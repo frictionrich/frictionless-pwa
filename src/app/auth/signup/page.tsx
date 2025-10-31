@@ -28,19 +28,20 @@ function SignUpForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleGoogleSignIn = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback?role=${role}`,
-        },
-      });
-      if (error) throw error;
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
+  // TODO: Implement Google Sign Up later
+  // const handleGoogleSignIn = async () => {
+  //   try {
+  //     const { error } = await supabase.auth.signInWithOAuth({
+  //       provider: 'google',
+  //       options: {
+  //         redirectTo: `${window.location.origin}/auth/callback?role=${role}`,
+  //       },
+  //     });
+  //     if (error) throw error;
+  //   } catch (err: any) {
+  //     setError(err.message);
+  //   }
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,7 +187,8 @@ function SignUpForm() {
               Create Account
             </Button>
 
-            <div className="relative my-6">
+            {/* TODO: Implement Google Sign Up later */}
+            {/* <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-neutral-grey-blue"></div>
               </div>
@@ -212,7 +214,7 @@ function SignUpForm() {
               iconPosition="left"
             >
               Sign up with Google
-            </Button>
+            </Button> */}
           </form>
 
           <p className="mt-8 text-center text-body-3 text-neutral-grey">
