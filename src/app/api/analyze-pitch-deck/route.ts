@@ -104,61 +104,61 @@ export async function POST(request: NextRequest) {
     try {
       // Polyfill DOMMatrix and related DOM APIs for Node.js (pdf-parse dependency requires them)
       if (typeof globalThis.DOMMatrix === 'undefined') {
-        // DOMMatrix polyfill for Node.js - minimal implementation
-        class DOMMatrixPolyfill {
-          a: number = 1;
-          b: number = 0;
-          c: number = 0;
-          d: number = 1;
-          e: number = 0;
-          f: number = 0;
-          
-          constructor(init?: string | number[]) {
-            if (typeof init === 'string') {
-              // Parse transform matrix string if needed
-            } else if (Array.isArray(init)) {
-              // Initialize from array if needed
-            }
+        // DOMMatrix polyfill - must be callable both as constructor and function
+        const DOMMatrixPolyfill = function DOMMatrix(this: any, init?: string | number[]) {
+          if (!(this instanceof DOMMatrix)) {
+            return new (DOMMatrix as any)(init);
           }
-          
-          static fromMatrix(other?: DOMMatrixPolyfill) {
-            return new DOMMatrixPolyfill();
-          }
-          
-          static fromFloat32Array(array: Float32Array) {
-            return new DOMMatrixPolyfill();
-          }
-          
-          multiply(other: DOMMatrixPolyfill) {
-            return new DOMMatrixPolyfill();
-          }
-          
+          this.a = 1;
+          this.b = 0;
+          this.c = 0;
+          this.d = 1;
+          this.e = 0;
+          this.f = 0;
+        } as any;
+        
+        DOMMatrixPolyfill.prototype = {
+          a: 1,
+          b: 0,
+          c: 0,
+          d: 1,
+          e: 0,
+          f: 0,
+          multiply(other: any) {
+            return new (DOMMatrixPolyfill as any)();
+          },
           translate(x: number, y: number) {
-            return new DOMMatrixPolyfill();
-          }
-          
+            return new (DOMMatrixPolyfill as any)();
+          },
           scale(x: number, y?: number) {
-            return new DOMMatrixPolyfill();
+            return new (DOMMatrixPolyfill as any)();
           }
-        }
+        };
+        
+        DOMMatrixPolyfill.fromMatrix = function(other?: any) {
+          return new DOMMatrixPolyfill();
+        };
+        
+        DOMMatrixPolyfill.fromFloat32Array = function(array: Float32Array) {
+          return new DOMMatrixPolyfill();
+        };
+        
         (globalThis as any).DOMMatrix = DOMMatrixPolyfill;
         (globalThis as any).DOMMatrixReadOnly = DOMMatrixPolyfill;
       }
       
-      // Also polyfill DOMPoint if needed
+      // Also polyfill DOMPoint if needed - also callable as function
       if (typeof globalThis.DOMPoint === 'undefined') {
-        (globalThis as any).DOMPoint = class DOMPoint {
-          x: number = 0;
-          y: number = 0;
-          z: number = 0;
-          w: number = 1;
-          constructor(x = 0, y = 0, z = 0, w = 1) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.w = w;
+        const DOMPointPolyfill = function DOMPoint(this: any, x = 0, y = 0, z = 0, w = 1) {
+          if (!(this instanceof DOMPoint)) {
+            return new (DOMPointPolyfill as any)(x, y, z, w);
           }
-        };
+          this.x = x;
+          this.y = y;
+          this.z = z;
+          this.w = w;
+        } as any;
+        (globalThis as any).DOMPoint = DOMPointPolyfill;
       }
       
       console.log('Importing pdf-parse...');
