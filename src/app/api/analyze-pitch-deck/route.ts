@@ -120,14 +120,48 @@ export async function POST(request: NextRequest) {
         pdfParser.on('pdfParser_dataReady', (pdfData: any) => {
           // Extract text from all pages
           let fullText = '';
+          
+          console.log('PDF data structure:', {
+            hasPages: !!pdfData.Pages,
+            pagesCount: pdfData.Pages?.length || 0,
+            firstPageStructure: pdfData.Pages?.[0] ? Object.keys(pdfData.Pages[0]) : []
+          });
+          
           if (pdfData.Pages && pdfData.Pages.length > 0) {
-            for (const page of pdfData.Pages) {
-              if (page.Texts && page.Texts.length > 0) {
+            for (let i = 0; i < pdfData.Pages.length; i++) {
+              const page = pdfData.Pages[i];
+              
+              // Try different possible text structures
+              if (page.Texts && Array.isArray(page.Texts) && page.Texts.length > 0) {
                 for (const text of page.Texts) {
-                  if (text.R && text.R.length > 0) {
+                  if (text.R && Array.isArray(text.R)) {
                     for (const r of text.R) {
                       if (r.T) {
                         // Decode URI component to handle special characters
+                        try {
+                          fullText += decodeURIComponent(r.T) + ' ';
+                        } catch {
+                          fullText += r.T + ' ';
+                        }
+                      }
+                    }
+                  } else if (text.T) {
+                    // Sometimes text is directly in T property
+                    try {
+                      fullText += decodeURIComponent(text.T) + ' ';
+                    } catch {
+                      fullText += text.T + ' ';
+                    }
+                  }
+                }
+              }
+              
+              // Also check if there's a FillTexts property
+              if (page.FillTexts && Array.isArray(page.FillTexts)) {
+                for (const fillText of page.FillTexts) {
+                  if (fillText.R && Array.isArray(fillText.R)) {
+                    for (const r of fillText.R) {
+                      if (r.T) {
                         try {
                           fullText += decodeURIComponent(r.T) + ' ';
                         } catch {
@@ -140,7 +174,15 @@ export async function POST(request: NextRequest) {
               }
             }
           }
-          resolve(fullText.trim());
+          
+          const extractedText = fullText.trim();
+          console.log(`Extracted ${extractedText.length} characters from PDF`);
+          
+          if (extractedText.length === 0) {
+            console.log('No text extracted. PDF structure sample:', JSON.stringify(pdfData).substring(0, 500));
+          }
+          
+          resolve(extractedText);
         });
       });
       
