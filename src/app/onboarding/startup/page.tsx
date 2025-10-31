@@ -114,7 +114,9 @@ export default function StartupOnboardingPage() {
               analysis = result.analysis;
               console.log('Analysis result:', analysis);
             } else {
-              console.log('AI analysis failed with status:', analysisResponse.status);
+              const errorData = await analysisResponse.json().catch(() => ({ error: 'Could not parse error response' }));
+              console.error('AI analysis failed with status:', analysisResponse.status);
+              console.error('Error details:', errorData);
             }
           } catch (analysisError) {
             console.error('AI analysis failed:', analysisError);
