@@ -2,6 +2,10 @@
 
 **Startup Funding, Reimagined** - Instant Alignment for Founders and Investors. Matched. Measured. Monitored.
 
+## ⚠️ Important Note
+
+**Service Worker Fixed**: The service worker has been updated to properly exclude Supabase API calls. If you experience authentication issues, clear your browser cache and unregister old service workers. See `FIXES.md` for details.
+
 ## Overview
 
 Frictionless is a streamlined investor-startup ecosystem designed for frictionless collaboration. It's a dual-sided marketplace that empowers both startups and investors by enabling founders to showcase their companies, demonstrate investment readiness, and connect with aligned capital sources — while providing investors with tools to discover, track, and engage with high-potential startups that match their thesis and timing.
