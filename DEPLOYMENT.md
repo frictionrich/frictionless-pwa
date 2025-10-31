@@ -29,15 +29,23 @@ CREATE TABLE startup_profiles (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
   company_name TEXT,
+  username TEXT,
+  tagline TEXT,
+  logo_url TEXT,
   website TEXT,
   pitch_deck_url TEXT,
   description TEXT,
   sector TEXT,
   stage TEXT,
   readiness_score NUMERIC,
+  linkedin TEXT,
+  twitter TEXT,
+  instagram TEXT,
+  tiktok TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(user_id)
+  UNIQUE(user_id),
+  UNIQUE(username)
 );
 
 -- Investor profiles table
@@ -45,6 +53,9 @@ CREATE TABLE investor_profiles (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
   organization_name TEXT,
+  username TEXT,
+  tagline TEXT,
+  logo_url TEXT,
   website TEXT,
   investor_deck_url TEXT,
   description TEXT,
@@ -53,9 +64,13 @@ CREATE TABLE investor_profiles (
   ticket_size_min NUMERIC,
   ticket_size_max NUMERIC,
   geography TEXT[],
+  twitter TEXT,
+  facebook TEXT,
+  linkedin TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(user_id)
+  UNIQUE(user_id),
+  UNIQUE(username)
 );
 
 -- Enable Row Level Security
@@ -148,9 +163,42 @@ CREATE TRIGGER update_investor_profiles_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 ```
 
+### 1.1 Update Existing Database (If tables already exist)
+
+If you already have the tables created, run these ALTER TABLE commands to add the new fields:
+
+```sql
+-- Add new fields to startup_profiles
+ALTER TABLE startup_profiles
+  ADD COLUMN IF NOT EXISTS username TEXT,
+  ADD COLUMN IF NOT EXISTS tagline TEXT,
+  ADD COLUMN IF NOT EXISTS logo_url TEXT,
+  ADD COLUMN IF NOT EXISTS linkedin TEXT,
+  ADD COLUMN IF NOT EXISTS twitter TEXT,
+  ADD COLUMN IF NOT EXISTS instagram TEXT,
+  ADD COLUMN IF NOT EXISTS tiktok TEXT;
+
+-- Add unique constraint on username
+ALTER TABLE startup_profiles
+  ADD CONSTRAINT startup_profiles_username_key UNIQUE (username);
+
+-- Add new fields to investor_profiles
+ALTER TABLE investor_profiles
+  ADD COLUMN IF NOT EXISTS username TEXT,
+  ADD COLUMN IF NOT EXISTS tagline TEXT,
+  ADD COLUMN IF NOT EXISTS logo_url TEXT,
+  ADD COLUMN IF NOT EXISTS twitter TEXT,
+  ADD COLUMN IF NOT EXISTS facebook TEXT,
+  ADD COLUMN IF NOT EXISTS linkedin TEXT;
+
+-- Add unique constraint on username
+ALTER TABLE investor_profiles
+  ADD CONSTRAINT investor_profiles_username_key UNIQUE (username);
+```
+
 ### 2. Storage Buckets
 
-Create two storage buckets in Supabase:
+Create three storage buckets in Supabase:
 
 1. **pitch-decks**
    - Public: No
@@ -161,6 +209,11 @@ Create two storage buckets in Supabase:
    - Public: No
    - File size limit: 50MB
    - Allowed MIME types: application/pdf, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation
+
+3. **logos**
+   - Public: Yes
+   - File size limit: 5MB
+   - Allowed MIME types: image/svg+xml, image/png, image/jpeg, image/gif
 
 ### 3. Storage Policies
 

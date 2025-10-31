@@ -73,9 +73,12 @@ export default function InvestorOnboardingPage() {
 
       if (profileError && profileError.code !== '23505') throw profileError;
 
-      // Upload investor deck if provided
+      // Upload investor deck and analyze if provided
       let investorDeckUrl = null;
+      let analysis = null;
+
       if (formData.investorDeckFile) {
+        // Upload file
         const fileExt = formData.investorDeckFile.name.split('.').pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
@@ -89,18 +92,50 @@ export default function InvestorOnboardingPage() {
           .getPublicUrl(fileName);
 
         investorDeckUrl = publicUrl;
+
+        // Analyze investor deck with AI if it's a PDF
+        if (fileExt?.toLowerCase() === 'pdf') {
+          try {
+            const fileReader = new FileReader();
+            const fileContent = await new Promise<string>((resolve, reject) => {
+              fileReader.onload = () => {
+                const text = fileReader.result as string;
+                resolve(text);
+              };
+              fileReader.onerror = reject;
+              fileReader.readAsText(formData.investorDeckFile as File);
+            });
+
+            const analysisResponse = await fetch('/api/analyze-investor-deck', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                content: fileContent,
+                fileName: formData.investorDeckFile.name,
+              }),
+            });
+
+            if (analysisResponse.ok) {
+              const result = await analysisResponse.json();
+              analysis = result.analysis;
+            }
+          } catch (analysisError) {
+            console.error('AI analysis failed:', analysisError);
+            // Continue without analysis - not critical
+          }
+        }
       }
 
-      // Create investor profile
+      // Create investor profile with AI-extracted data
       const { error: investorError } = await supabase
         .from('investor_profiles')
         .insert({
           user_id: user.id,
-          organization_name: formData.organizationName,
+          organization_name: analysis?.fund_name || formData.organizationName,
           website: formData.website,
           investor_deck_url: investorDeckUrl,
-          focus_sectors: formData.focusSectors,
-          focus_stages: formData.focusStages,
+          focus_sectors: analysis?.sector_focus?.length > 0 ? analysis.sector_focus : formData.focusSectors,
+          focus_stages: analysis?.stage_focus?.length > 0 ? analysis.stage_focus : formData.focusStages,
           ticket_size_min: formData.ticketSizeMin ? parseInt(formData.ticketSizeMin) : null,
           ticket_size_max: formData.ticketSizeMax ? parseInt(formData.ticketSizeMax) : null,
         });

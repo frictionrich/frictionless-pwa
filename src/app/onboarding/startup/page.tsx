@@ -32,14 +32,17 @@ export default function StartupOnboardingPage() {
   };
 
   const handleSubmit = async () => {
+    console.log('handleSubmit called');
     setLoading(true);
     setError('');
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('User:', user);
       if (!user) throw new Error('Not authenticated');
 
       // Create profile
+      console.log('Creating profile...');
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -48,41 +51,102 @@ export default function StartupOnboardingPage() {
           role: 'startup',
         });
 
-      if (profileError && profileError.code !== '23505') throw profileError;
+      if (profileError && profileError.code !== '23505') {
+        console.error('Profile error:', profileError);
+        throw profileError;
+      }
+      console.log('Profile created or already exists');
 
-      // Upload pitch deck if provided
+      // Upload pitch deck and analyze if provided
       let pitchDeckUrl = null;
+      let analysis = null;
+
       if (formData.pitchDeckFile) {
+        // Upload file
+        console.log('Uploading pitch deck...');
         const fileExt = formData.pitchDeckFile.name.split('.').pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-        const { error: uploadError, data } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('pitch-decks')
           .upload(fileName, formData.pitchDeckFile);
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw uploadError;
+        }
+        console.log('File uploaded successfully');
 
         const { data: { publicUrl } } = supabase.storage
           .from('pitch-decks')
           .getPublicUrl(fileName);
 
         pitchDeckUrl = publicUrl;
+
+        // Analyze pitch deck with AI if it's a PDF
+        if (fileExt?.toLowerCase() === 'pdf') {
+          try {
+            console.log('Starting AI analysis...');
+            const fileReader = new FileReader();
+            const fileContent = await new Promise<string>((resolve, reject) => {
+              fileReader.onload = () => {
+                const text = fileReader.result as string;
+                // Extract text content (simplified - in production use proper PDF parser)
+                resolve(text);
+              };
+              fileReader.onerror = reject;
+              fileReader.readAsText(formData.pitchDeckFile as File);
+            });
+
+            console.log('File read, calling API...');
+            const analysisResponse = await fetch('/api/analyze-pitch-deck', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                content: fileContent,
+                fileName: formData.pitchDeckFile.name,
+              }),
+            });
+
+            console.log('API response status:', analysisResponse.status);
+            if (analysisResponse.ok) {
+              const result = await analysisResponse.json();
+              analysis = result.analysis;
+              console.log('Analysis result:', analysis);
+            }
+          } catch (analysisError) {
+            console.error('AI analysis failed:', analysisError);
+            // Continue without analysis - not critical
+          }
+        }
       }
 
-      // Create startup profile
+      // Create startup profile with AI-extracted data
+      console.log('Creating startup profile...');
       const { error: startupError } = await supabase
         .from('startup_profiles')
         .insert({
           user_id: user.id,
-          company_name: formData.companyName,
+          company_name: analysis?.company_name || formData.companyName,
           website: formData.website,
           pitch_deck_url: pitchDeckUrl,
+          description: analysis?.value_proposition || analysis?.business_model || null,
+          sector: analysis?.industry || null,
+          stage: analysis?.stage || null,
+          readiness_score: analysis?.readiness_assessment?.overall_score || null,
         });
 
-      if (startupError) throw startupError;
+      if (startupError) {
+        console.error('Startup profile error:', startupError);
+        throw startupError;
+      }
+
+      console.log('Startup profile created successfully!');
+      console.log('Redirecting to dashboard...');
 
       // Redirect to dashboard
       router.push('/dashboard/startup');
     } catch (err: any) {
+      console.error('Error in handleSubmit:', err);
       setError(err.message);
     } finally {
       setLoading(false);
