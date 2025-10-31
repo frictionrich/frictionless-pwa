@@ -1,0 +1,11 @@
+Style Guide: https://www.figma.com/design/6cqK6N9jVely23MPwUQkwK/Frictionless?node-id=2-14&p=f&t=mFcQusjBCeNTqLnI-0
+
+Startup onboarding: https://www.figma.com/design/6cqK6N9jVely23MPwUQkwK/Frictionless?node-id=400-4385&p=f&t=mFcQusjBCeNTqLnI-0
+Startup dashboard: https://www.figma.com/design/6cqK6N9jVely23MPwUQkwK/Frictionless?node-id=388-2219&p=f&t=mFcQusjBCeNTqLnI-0
+Startup investor list: https://www.figma.com/design/6cqK6N9jVely23MPwUQkwK/Frictionless?node-id=400-4164&p=f&t=mFcQusjBCeNTqLnI-0
+Startup Settings: https://www.figma.com/design/6cqK6N9jVely23MPwUQkwK/Frictionless?node-id=400-4380&p=f&t=mFcQusjBCeNTqLnI-0
+
+Investor onboarding: https://www.figma.com/design/6cqK6N9jVely23MPwUQkwK/Frictionless?node-id=400-4386&p=f&t=mFcQusjBCeNTqLnI-0
+Investor dashboard: https://www.figma.com/design/6cqK6N9jVely23MPwUQkwK/Frictionless?node-id=400-4382&p=f&t=mFcQusjBCeNTqLnI-0
+Investor startup list: https://www.figma.com/design/6cqK6N9jVely23MPwUQkwK/Frictionless?node-id=400-4383&p=f&t=mFcQusjBCeNTqLnI-0
+Investor Settings: https://www.figma.com/design/6cqK6N9jVely23MPwUQkwK/Frictionless?node-id=400-4384&p=f&t=mFcQusjBCeNTqLnI-0

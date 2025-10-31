@@ -1,0 +1,330 @@
+
+
+
+⚙️ PURPOSE
+To generate a complete Frictionless Investor Report, showing how an investor aligns with startups in the Frictionless ecosystem.
+Each investor report must include:
+Investor profile summary
+
+
+Portfolio insights & thesis alignment
+
+
+Complete startup matching table
+
+
+Detailed “View Details” section for each startup
+
+
+Frictionless insights for the investor
+
+
+Dashboard-ready HTML formatting
+
+
+This process allows the analyst to go from zero data to a full, web-ready report consistent with all investor views (Luis Martínez, Mike Troy, Beto Altamirano, Alfonso García, etc.).
+
+🔹 PHASE 1 — CONTEXT & ROLE SETUP
+Prompt 1 — Frictionless Investor Analyst Context Setup
+You are a Frictionless Intelligence analyst.
+Your role is to produce full Frictionless Investor Reports for angel investors, venture capital partners, and corporate investors within the Frictionless ecosystem.
+
+Each report must mirror the Frictionless investor dashboard layout:
+Cover (intro for both buttons)
+
+
+Fund Profile Summary
+
+
+“Your Startup Matches” table
+
+
+“View Details” for each startup (match %, readiness, fit type, reasoning, frictionless view)
+
+
+Optional section for Investor Insights or Activity Summary
+
+
+
+Each startup matched should include:
+Match %
+
+
+Stage, HQ, Sector
+
+
+Readiness Score
+
+
+Fit Type (Excellent / Strong / Watch / Impact)
+
+
+Why It Fits
+
+
+Risks / Friction
+
+
+Frictionless View (vertical metrics)
+
+
+What We Need From Investor
+
+
+Next Step
+
+
+
+
+🔹 PHASE 2 — INVESTOR INPUT & PROFILE CREATION
+Prompt 2 — Investor Analysis
+
+
+You are analyzing an investor/fund deck or profile. Extract and structure the following information in JSON format:
+
+
+Based on the following background (or investor website/bio): {{INVESTOR_DECK_TEXT}}
+
+
+{
+  "fund_name": "string",
+  "investor_name": "string (individual investor name if applicable)",
+  "headquarters": "string (City, State/Country)",
+  "fund_size": "string (e.g., '$50M' or 'Angel Investor')",
+  "average_ticket": "string (e.g., '$25K-$150K')",
+  "stage_focus": "array of stages (Pre-seed, Seed, Series A, etc.)",
+  "sector_focus": "array of sectors/industries",
+  "geography_focus": "array of geographic regions",
+  "investment_thesis": "string (detailed investment philosophy)",
+  "portfolio_highlights": "array of portfolio company names",
+  "investment_criteria": {
+    "minimum_revenue": "string or null",
+    "team_requirements": "string",
+    "other_requirements": "string"
+  },
+  "value_add": "string (how they help portfolio companies)",
+  "decision_process": "string (how they make investment decisions)",
+  "timeline": "string (typical decision timeline)"
+}
+
+
+Present these in a “Fund Profile Summary” format consistent with Frictionless investor reports.
+
+🔹 PHASE 3 — COVER PAGE
+Prompt 3 — Generate Investor Cover Page Texts
+Generate the two button texts for the investor dashboard:
+
+Profile Summary Button: should sound like a personalized invitation to explore their thesis, value-add, and data-backed insights. Example tone:
+“See how your investment philosophy translates into measurable startup alignment across Frictionless Intelligence.”
+
+Startup Matches Button: should feel intriguing and personal, as if written to the investor themselves:
+“Discover which startups best reflect your thesis — and where your experience or capital could create the most impact.”
+
+Output both button intros in engaging, conversational tone.
+
+
+
+
+🔹 PHASE 4 — FUND PROFILE SUMMARY
+Prompt 4 — Generate Fund Profile Summary
+Create a detailed Fund Profile Summary section in this format:
+Headquarters: [city, region]  
+Fund Size: [amount or “Not Available”]  
+Average Ticket: [range]  
+Primary Verticals: [list]  
+Investment Philosophy: [2–4 lines describing thesis and approach]  
+Portfolio Examples: [if available, else say Not Available]  
+Geographic Bias: [specific focus areas]
+
+Then, include a short “Frictionless Insights” paragraph summarizing:
+The investor’s strongest startup types (by sector, geography, stage)
+
+
+Typical readiness range (60–80%) where they add the most value
+
+
+Ideal co-investment conditions (e.g., with accelerators, tech operators, etc.)
+
+
+
+🔹 PHASE 5 — STARTUP MATCHES TABLE
+Prompt 5 — Generate Startup Matches Table
+Create a “Your Startup Matches” table listing all 9 startups in the Frictionless ecosystem (or whichever set is current):
+
+#
+Startup
+Profile
+Match %
+1
+[Startup 1]
+[Short one-line description]
+[Match %]
+2
+[Startup 2]
+[Short one-line description]
+[Match %]
+…
+…
+…
+…
+
+Match % should reflect realism (35–95%) and vary by investor thesis, geography, and sector relevance.
+
+Example:
+For a DeepTech/AI investor → higher matches with Alt-Bionics, Openlane, EarthLive
+
+
+For an ESG/CivicTech investor → higher matches with Berry Bank, Prosperas, EarthLive
+
+
+
+End with a one-line summary noting where the investor’s highest synergy lies (e.g., “Top matches cluster in AI automation and sustainability.”)
+
+🔹 PHASE 6 — VIEW DETAILS (PER STARTUP)
+Prompt 6 — Generate Full “View Details” Blocks
+For each startup, create a full “View Details” section using this structure and formatting:
+
+<h3>[Startup Name]</h3>
+Sector: [industry + specialization]  
+Match: [percent]  
+Stage: [pre-seed / seed / bridge]  
+HQ: [city, country]  
+Readiness Score: [percent + readiness level]  
+Fit Type: [Excellent / Strong / Watch / Impact]
+
+Why It Fits:
+[2–3 lines explaining why this startup aligns with the investor’s thesis, geography, or sector.]
+
+Risks / Friction:
+[1–2 lines describing gaps that prevent perfect alignment.]
+
+Frictionless View:
+- Sector Fit: #/10  
+- Stage Fit: #/10  
+- Geography: #/10  
+- Founder–Market Fit: #/10  
+- Traction: #/10  
+- Impact & Thesis Fit: #/10  
+
+What We Need From Investor:
+[What kind of engagement or support is expected from this investor (mentorship, follow-on, intros, pilot support, etc.)]
+
+Next Step:
+[Specific next action for this investor, such as “Schedule intro call,” “Review pilot data,” or “Attend pitch showcase.”]
+
+The style should be consistent with Alfonso García’s final “View Details” blocks (vertical layout, clear data hierarchy, action-oriented tone).
+
+🔹 PHASE 7 — INSIGHTS SUMMARY (OPTIONAL)
+Prompt 7 — Add Frictionless Insights (Investor-Specific)
+Create a short “Frictionless Insights for [Investor Name]” section summarizing:
+What type of startups most align with their thesis (by sector and maturity)
+
+
+How many of their matches are above 65%
+
+
+Which areas they can add the most strategic value (mentorship, distribution, product, ESG, etc.)
+
+
+
+Format as a 3–4 bullet “insights summary” paragraph.
+
+🔹 PHASE 8 — QUALITY CONTROL
+Prompt 8 — QA Checklist
+Before finalizing the investor report, verify:
+✅ Both cover button intros are included and tailored to the investor.
+
+
+✅ Fund Profile Summary includes “Not Available” where data is missing.
+
+
+✅ All 9 startup matches appear in the table.
+
+
+✅ Each startup has a full “View Details” block with all metrics.
+
+
+✅ Frictionless View is listed vertically (not inline).
+
+
+✅ Match % values are realistic and varied.
+
+
+✅ Return ONLY valid JSON, no markdown formatting.
+
+
+✅ Footer credits are included.
+
+
+
+Confirm that the HTML output is ready for upload to the investor dashboard.
+
+📁 REQUIRED OUTPUTS PER INVESTOR
+Each processed investor must have:
+✅ Return ONLY valid JSON, no markdown formatting.
+
+
+
+✅ Word or PDF version for reference
+
+
+✅ Summary table of startup matches
+
+
+✅ Frictionless insights paragraph
+
+
+✅ Investor–startup matching data stored in CRM or internal database
+
+
+⚙️ EXAMPLE INVESTORS (PRELOADED FOR MATCHING)
+When generating investor matches, always include these six Alamo Angels:
+Luis Martínez — Capital Factory
+
+
+Mike Troy — Geekdom Fund
+
+
+Mariano González — MGV Capital
+
+
+Will Conway — Tech Bloc / Mailgun
+
+
+Beto Altamirano — Irys Insights
+
+
+Alfonso García — 365 Retail Markets / Tech Bloc
+
+
+And for external fund references, use these as the core benchmark set (customize by startup sector):
+Sapphire Sport
+
+
+Courtside Ventures
+
+
+Elysian Park Ventures
+
+
+KB Partners
+
+
+Will Ventures
+
+
+Causeway Media Partners
+
+
+Stadia Ventures
+
+
+Techstars Sports
+
+
+HYPE Sports Innovation
+
+
+Initialized Capital
+
+

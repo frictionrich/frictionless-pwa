@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  * {
+    @apply border-neutral-grey;
+  }
+
+  body {
+    @apply bg-neutral-white text-neutral-black;
+    font-family: var(--font-inter);
+  }
+}
+
+@layer components {
+  /* Button Styles from Design Guide */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md font-medium transition-all duration-200;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-shade-2 focus:bg-shade-3 active:bg-shade-3;
+    @apply shadow-button;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-neutral-black border border-neutral-grey-blue hover:bg-neutral-silver focus:bg-neutral-silver;
+  }
+
+  .btn-tertiary {
+    @apply bg-transparent text-primary border border-primary hover:bg-tint-5 focus:bg-tint-4;
+  }
+
+  .btn-normal {
+    @apply h-12 px-6 text-body-2;
+  }
+
+  .btn-medium {
+    @apply h-10 px-5 text-body-3;
+  }
+
+  .btn-small {
+    @apply h-8 px-4 text-body-4;
+  }
+
+  /* Card Styles */
+  .card {
+    @apply bg-white rounded-lg border border-neutral-silver shadow-card p-6;
+  }
+
+  /* Input Styles */
+  .input {
+    @apply w-full h-12 px-4 rounded-md border border-neutral-grey-blue;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
+    @apply placeholder:text-neutral-light-grey;
+  }
+
+  /* Match Badge */
+  .match-badge {
+    @apply inline-flex items-center gap-2;
+  }
+
+  .match-bar {
+    @apply h-2 rounded-full bg-neutral-silver overflow-hidden;
+  }
+
+  .match-fill {
+    @apply h-full rounded-full transition-all duration-300;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-shade-2 bg-clip-text text-transparent;
+  }
+}

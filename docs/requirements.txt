@@ -1,0 +1,366 @@
+Frictionless Requirements: Startup Pitch and Investor Platform
+
+Overview
+Frictionless is a streamlined investor-startup ecosystem for frictionless collaboration. Frictionless is a dual-sided marketplace designed to empower both startups and investors. It enables founders to showcase their companies, demonstrate investment readiness, and connect with aligned capital sources — while providing investors with the tools to discover, track, and engage with high-potential startups that match their thesis and timing.
+
+The platform facilitates informed, transparent interactions on both sides by surfacing actionable insights, readiness metrics, and structured engagement workflows.
+
+Startup Funding, Reimagined — Instant Alignment for Founders and Investors. Matched. Measured. Monitored.
+
+
+
+
+Goals of Application
+The Frictionless platform is designed to serve three primary user types — investors, startups, and admins — each with distinct goals:
+Investors - gain structured visibility into startup pipelines, track "watchlist" founders, and make data-informed decisions aligned with their investment theses.
+Startups - gain exposure to qualified investors, track engagement, and receive structured feedback on investment readiness.
+Admins - ensure the integrity, configuration, and moderation of the platform experience.
+
+
+
+More Background: https://docs.google.com/presentation/d/13ffpBaGpeETggleJs2cUbcywgczm9EXVG4qx8geW8Yk/edit?usp=sharing
+
+
+
+Functional Requirements
+1. MVP Functionality by User Role
+Startup founders
+Register/login/forgot password
+Include Google sign in and local email login
+Onboarding flow where user creates profile: 
+Company name, contact information (multiple contacts)
+Website, social media accounts
+Privacy policy acknowledgement
+Upload Pitch deck
+Edit profile 
+Company name, contact information (multiple contacts)
+Website, social media accounts
+View all documents and history
+Add/delete/update documents
+See list of investors on site with simple filters (sector, stage, geography, investment focus)
+A toggle between investors in the Frictionless ecosystem and investors the startup directly applied.
+Show the match percentage next to each investor in prioritize investors that match by default
+Message center to manage messages from investors
+Ability to see messages and do very light message management
+History of all platform interactions with investors
+See “applications” and “accepts”
+See list of all “applied” investors
+Ability to message investors who have expressed “interest”
+See startup performance dashboard: funding progress, milestones, investor KPIs
+Get notifications (investor interest, request for update, new opportunities, etc)
+Page that shows history of notifications
+Email sent to notify contacts
+Notification settings so they can choose which notifications they receive and how they receive them.
+
+Startup Founders
+1. Frictionless Onboarding (No Manual Forms)
+•	Register/login via Google or email
+•	Upload pitch deck
+•	Share website and social media links (e.g., LinkedIn, Twitter, Crunchbase)
+•	AI auto-extracts key data:
+•	Company name, description, sector, stage
+•	Founding team
+•	Contact details
+•	Product, traction, financials, and milestones (when available)
+•	Automatically generates:
+•	Frictionless Profile
+•	Investment Readiness Assessment
+•	Suggested Match % with investors
+•	Founder reviews, edits, or uploads any missing/incorrect information
+
+
+2. Profile & Document Management
+•	View/edit auto-generated profile
+•	Add or update materials: videos, KPIs, updated decks
+•	Track changes and document upload history
+
+
+3. Investor Discovery & Matchmaking
+•	Browse and filter investors by thesis, stage, geography, sector
+•	Toggle between:
+•	Frictionless-matched investors (auto-ranked by match %)
+•	Directly-applied investors (e.g., from embedded forms)
+•	Engage via in-platform messaging
+•	Track engagement: applications, responses, interactions
+
+
+4. Dashboards & Notifications
+•	Startup Dashboard: fundraising progress, engagement metrics, KPIs
+•	Notification center:
+•	Alerts on investor interest, updates, or milestones
+•	“Heartbeat” alerts when watched investors re-engage
+•	Notification preferences: choose type, method, and frequency
+•	Email notifications to designated team contacts
+
+
+Investors / Funds
+
+
+1. Frictionless Onboarding (No Manual Forms)
+•	Register/login via Google or email
+•	Upload investor deck or overview
+•	Share website and social media (e.g., LinkedIn, firm Crunchbase, Medium)
+•	AI auto-extracts key data:
+•	Fund name, description, stage and sector focus
+•	Team members and contact details
+•	Check size, ticket range, geographic focus, portfolio highlights
+•	Automatically generates:
+•	Frictionless Investor Profile
+•	Investment Thesis Map
+•	Smart startup matching engine
+•	Investor reviews and optionally edit
+
+Investors
+Register/login/forgot password
+Onboarding flow where user creates profile: 
+Organization name, contact information (multiple contacts)
+Website, social media accounts
+Subscription payment information 
+Privacy policy acknowledgement
+Upload Investor deck
+Edit profile
+Organization name, contact information (multiple contacts)
+Website, social media accounts
+Company name, contact information (multiple contacts)
+Payment information
+view/edit payment method, payment history, view/download receipt
+See list of all startup companies on site with simple filters
+A toggle between startups in the Frictionless ecosystem (Frictionless) and startups that directly applied via the investor website (direct)
+Show the match percentage next to each startup and presents the startups that match first by default
+Filters: Sector, Stage, Geography, Investment focus, Founders composition, CAP, Investment detail, ARR, Burn, Profitability, Runway
+See startup performance dashboard broken down by status of startup company
+Criteria for companies: readiness rating, funding progress, milestones, investor KPIs
+Message center to manage messages from startup companies
+Ability to see messages and do very light message management 
+Get notifications (investor interest, request for update, new opportunities, etc)
+Page that shows history of notifications
+Email sent to notify contacts
+Proactive notifications (“heartbeat” feature) for following/interested companies that improve their pitch/readiness score
+
+Admin
+Manage user accounts (startups/investors)
+Ability to change all account information, suspend/delete account, manage/view payments
+Be able to specify assessment questions and grading criteria
+Current Questions: Frictionless Assessment
+Current form
+See list of investors on site with simple filters (sector, stage, geography, investment focus)
+Includes button to “apply” for investor consideration
+See list of all startup companies on site with simple filters
+Filters: Sector, Stage, Geography, Investment focus, Founders composition, CAP, Investment detail, ARR, Burn, Profitability, Runway
+
+
+Admin – MVP Functionality 
+1. User Account Oversight
+•	View and manage all user accounts (startups and investors)
+•	Support account-level changes:
+•	Suspend/reactivate/delete users
+•	Assist with onboarding or access recovery
+•	Troubleshoot login/authentication issues
+•	View account metadata, documents, and interaction logs
+
+
+Note: Privacy and data exposure controls are not managed by Admins directly. Instead, all users manage their own visibility through their Privacy & Exposure Dashboard.
+
+
+2. Supervision of Privacy & Sharing Logic
+While users control their sharing preferences, Admins can:
+•	Monitor sharing status (public, semi-private, private) of profiles for operational visibility
+•	View audit trails (e.g. sharing toggles, exposure events)
+•	Support users in configuring their Privacy & Exposure Dashboard if requested
+•	Configure default sharing settings only for white-label enterprise instances
+Example: A white-label partner may have all inbound startup submissions marked “private by default” — Admins configure that instance-level behavior at setup.
+
+
+3. Assessment Engine Management
+•	Define and maintain the Frictionless Readiness Assessment logic
+•	Create or update:
+•	Assessment questions
+•	Grading rubrics
+•	Sector-specific scoring logic
+•	Link assessments to the AI data extraction pipeline from pitch decks, websites, and social signals
+•	Trigger system-wide reassessments when scoring models change
+
+
+4. AI Data & Profile Quality Oversight
+•	Audit AI-extracted profiles for accuracy
+•	Flag hallucinated, missing, or low-confidence data
+•	Escalate or correct incorrect inferences from:
+•	Pitch decks
+•	Investor decks
+•	Website and social scraping
+•	Optionally approve AI-generated updates before public display (for high-risk users or premium partners)
+
+
+5. Platform Directory & Discovery Supervision
+•	Browse the global directories of both startups and investors
+•	Apply filters:
+•	Sector, Stage, Geography, Investment Focus
+•	CAP, ARR, Burn, Runway, Profit...
+
+2. Future functionality not part of MVP build
+Full reporting and analytics
+Audit logs for all user activity
+A map view to see investors/startups
+Community features for in-app connection and communication between different startup companies and investors
+3. Progressive Web App Only
+MVP will be accessible on desktop and mobile browsers
+Mobile apps are not part of the MVP but might be revisited in the future
+
+
+Non-Functional Requirements
+Maintainability: Code should be modular and well-documented to facilitate future updates
+Automated Tests:
+Core functionality should have automated tests in order to prevent regressions
+Unit tests and integration tests should both be written for most critical workflows
+Performance: Ensure fast load times (<3 seconds) and scalability for growing user bases
+Security:
+Secure authentication (e.g., OAuth2)
+Data encryption in transit
+
+
+Technical Stack
+Frontend
+This framework should be something that is “modern” (e.g., React, Tailwind, Next.js, Vue.js)
+
+Should employ low-lift PWA technologies like
+All Browser compliance
+Installable app
+Responsive for different screen sizes (with just two breakpoints: mobile and desktop)
+Takes into consideration Search Engine Optimization
+Service Workers for speed/offline access
+
+Backend
+Preferred: Supabase (PostgreSQL database, authentication, APIs)
+Alternatives: Open for discussion if Supabase does not meet specific needs
+Hosting
+Supabase should be hosted by Supabase on the free plan
+The front end and other assets should be deployed in a CDN like AWS CloudFront for fast access
+Alternatives: Open for discussion if AWS does not meet specific needs or if there is an easier/cheaper alternative for front-end hosting
+The main geography for the MVP will be North and South America (US, Mexico, Latin America) 
+Two cloud environments should be created for the front-end and backend: production and staging
+Code should be checked into a private Github repo (available upon request)
+Basic CI/CD pipelines should be setup in Github for deployment to Supabase/AWS after pull request
+
+
+Milestones
+Between each milestone listed below, the team should validate progress and decisions with the Frictionless CTO (Rich Robison) before moving on in order to provide feedback at the right stage.
+
+Finalize technical stack and architecture design
+Create database design and Supabase backend
+Create cloud architecture and deployment pipelines
+Develop frontend features
+Conduct testing cycles for usability and performance
+Do acceptance testing with other members of Frictionless (CEO, CPO,  COO, etc)
+Signoff and finalize project engagement
+
+Detailed mockups can be found in Frictionless.fig
+
+
+Additional Features to Scope Out for the future
+
+These additional features will also be requested depending on the timing and cost, but are not part of the base MVP requested in this document. 
+
+1. Virtual Data Room 
+A Virtual Data Room would allow startups to securely submit sensitive materials such as financial documents, business plans, and proprietary information. Key features to consider include:
+
+Enhanced Security: Two-factor authentication, granular access controls, dynamic watermarking, and AES-256 encryption.
+Collaboration Tools: Real-time commenting and document sharing for investors and startups.
+Compliance: Ensure adherence to industry standards like ISO or FINRA for data protection.
+
+2. Web Scraper for Startup Data
+A web scraper would automate the collection of data on early-stage companies, including funding rounds, valuations, sectors, and investor profiles. Features to include:
+
+Data Points: Funding history, valuation trends, sector performance, investor activity.
+Tools: SaaS platforms (e.g., Octoparse), open-source frameworks (e.g., Beautiful Soup or Scrapy), or custom Python-based solutions.
+
+3. LLM inference of company data points from pitch deck
+In order to assess the startup’s investment readiness, we gather sever points of data like:  Frictionless Assessment
+
+We would like to price out the cost of getting an LLM to produce this data from a pitch deck with low hallucinations.
+
+
+4. Built in form for startups to take for startup readiness
+The LLM likely won’t get all the data need, so we also need to evaluate having in-app experience for asking these questions to fill out their profile.
+
+Current Questions: Frictionless Assessment
+Current form
+
+
+
+5. White Label version of the site to be embedded on investor sites
+
+Purpose
+The White Label/Direct version of Frictionless enables venture capital firms and investors to host a customized entry point on their own websites for startup founders to submit pitch decks and engage with their branded investment experience. This allows VCs to maintain their brand identity while still leveraging the full power of the Frictionless platform.
+Key Concepts
+White Label = "Direct" experience on visuals and backend tagging
+
+
+User interaction is on a venture firm's website, not on FrictionlessInc.com
+
+
+Creates a branded funnel for startup pitch intake
+
+
+Automatically connects to the Frictionless investor’s account and tags entries as "Direct"
+
+
+Full functionality once inside Frictionless remains consistent
+
+
+How It Works: User Flow
+1. Entry Point: VC Website
+A VC firm embeds or links to a white-labeled version of the pitch submission form on their own website.
+
+
+Founders see the VC’s brand (logo, colors) and are encouraged to submit a pitch.
+
+
+Submission form collects standard Frictionless startup profile data and documents.
+
+
+2. Connection to Frictionless Core Platform
+Once a pitch is submitted:
+
+
+The data is stored and routed through Frictionless backend infrastructure.
+
+
+The startup is automatically tagged as a “Direct” lead in the system.
+
+
+The associated investor sees this startup under the "Direct Applications" toggle in their Frictionless dashboard.
+
+
+3. Onboarding & Assessment
+Founders are prompted to complete the Frictionless startup readiness assessment on the Frictionle.
+
+
+Startups receive limited access to the Frictionless platform for ongoing engagement with the investor and progress tracking.
+
+
+System Requirements for Implementation
+Front-End (VC Website Embed or Link)
+Customizable submission form widget (logo, color, custom URL routing)
+
+
+Optional integration as an iframe, pop-up modal, or standalone page hosted by Frictionless but co-branded
+
+
+Back-End
+Tagging mechanism: Automatically classify and display startups as “Direct” in the system
+
+
+White label theming engine: Serve the correct branding for different partners
+
+
+Routing logic to associate each submission with the correct investor profile
+
+
+Seamless integration with startup readiness assessment and messaging workflows
+
+
+Admin Needs
+Ability for admins to configure and deploy white label instances per investor
+
+
+Dashboard to view/manage "Direct" entries across accounts
