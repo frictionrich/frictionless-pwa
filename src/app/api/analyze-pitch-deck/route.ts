@@ -103,9 +103,16 @@ export async function POST(request: NextRequest) {
     let content: string;
     try {
       console.log('Importing pdfjs-dist...');
-      // Use pdfjs-dist which is designed for Node.js environments
-      // For v4+, need to use the worker path or direct import
-      const pdfjsLib = await import('pdfjs-dist');
+      // Use pdfjs-dist legacy build for Node.js (doesn't require workers)
+      // Try legacy build first, then fall back to regular import
+      let pdfjsLib: any;
+      try {
+        // Try legacy build which doesn't require workers
+        pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
+      } catch {
+        // Fall back to regular import
+        pdfjsLib = await import('pdfjs-dist');
+      }
       
       // Get the getDocument function - it might be at the root or under default
       let getDocument: any;
@@ -124,9 +131,28 @@ export async function POST(request: NextRequest) {
         throw new Error(`Could not find getDocument function. Module keys: ${Object.keys(pdfjsLib).join(', ')}`);
       }
       
+      // Configure pdfjs-dist to work in serverless environment (disable worker)
+      // For Node.js/serverless, disable workers completely
+      if ((pdfjsLib as any).GlobalWorkerOptions) {
+        (pdfjsLib as any).GlobalWorkerOptions.workerSrc = '';
+      }
+      
+      // Set verbosity to suppress worker warnings
+      if ((pdfjsLib as any).setVerbosityLevel) {
+        (pdfjsLib as any).setVerbosityLevel(0);
+      }
+      
       // Load the PDF document (pdfjs-dist requires Uint8Array)
+      // Disable workers completely for serverless
       console.log('Loading PDF document, buffer size:', uint8Array.length);
-      const loadingTask = getDocument({ data: uint8Array });
+      const loadingTask = getDocument({ 
+        data: uint8Array,
+        useSystemFonts: true,
+        verbosity: 0,
+        // Disable worker completely
+        disableAutoFetch: true,
+        disableStream: true,
+      });
       const pdfDocument = await loadingTask.promise;
       
       // Extract text from all pages
