@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import pdfParse from 'pdf-parse';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -100,7 +99,13 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Extract text from PDF using pdf-parse
+    // Extract text from PDF using pdf-parse (dynamic import handles ESM module)
+    // pdf-parse v2.4.5 is ESM-only and may not have a default export
+    const pdfParseModule = await import('pdf-parse');
+    // The module exports the function directly, not as a default export
+    const pdfParse = typeof pdfParseModule === 'function' 
+      ? pdfParseModule 
+      : (pdfParseModule.default || pdfParseModule);
     const pdfData = await pdfParse(buffer);
     const content = pdfData.text;
 
