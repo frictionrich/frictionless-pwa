@@ -100,12 +100,44 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Extract text from PDF using pdf-parse (dynamic import handles ESM module)
-    // pdf-parse v2.4.5 is ESM-only and exports the function as the module namespace
-    const pdfParseModule = await import('pdf-parse') as any;
-    // Access the default export if it exists, otherwise use the module itself
-    const pdfParse = pdfParseModule.default ?? pdfParseModule;
-    const pdfData = await pdfParse(buffer);
-    const content = pdfData.text;
+    let content: string;
+    try {
+      console.log('Importing pdf-parse...');
+      const pdfParseModule = await import('pdf-parse');
+      console.log('pdf-parse module imported:', typeof pdfParseModule, Object.keys(pdfParseModule));
+      
+      // pdf-parse v2.4.5 is ESM-only - try different ways to access the function
+      let pdfParse: any;
+      const moduleAny = pdfParseModule as any;
+      
+      if (typeof pdfParseModule === 'function') {
+        pdfParse = pdfParseModule;
+      } else if (moduleAny.default && typeof moduleAny.default === 'function') {
+        pdfParse = moduleAny.default;
+      } else {
+        // Try to find a function export in the module
+        const entries = Object.entries(pdfParseModule);
+        const funcEntry = entries.find(([_, value]) => typeof value === 'function');
+        if (funcEntry) {
+          pdfParse = funcEntry[1];
+        } else {
+          // Last resort: use the module itself if it might be callable
+          pdfParse = pdfParseModule;
+        }
+      }
+      
+      if (typeof pdfParse !== 'function') {
+        throw new Error(`pdf-parse is not a function. Got: ${typeof pdfParse}, module keys: ${Object.keys(pdfParseModule).join(', ')}`);
+      }
+      
+      console.log('Calling pdfParse with buffer size:', buffer.length);
+      const pdfData = await pdfParse(buffer);
+      content = pdfData.text || '';
+      console.log('PDF text extracted, length:', content.length);
+    } catch (parseError: any) {
+      console.error('PDF parsing error:', parseError);
+      throw new Error(`Failed to parse PDF: ${parseError.message}`);
+    }
 
     if (!content || content.trim().length < 100) {
       return NextResponse.json(
@@ -143,10 +175,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('Error analyzing pitch deck:', error);
+    console.error('Error stack:', error.stack);
     return NextResponse.json(
       {
         error: 'Failed to analyze pitch deck',
-        details: error.message
+        details: error.message || 'Unknown error',
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
       { status: 500 }
     );
