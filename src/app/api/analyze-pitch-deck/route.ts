@@ -104,21 +104,29 @@ export async function POST(request: NextRequest) {
     try {
       console.log('Importing pdfjs-dist...');
       // Use pdfjs-dist which is designed for Node.js environments
-      // Try different import paths based on version
-      let pdfjsLib: any;
-      try {
-        pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js');
-      } catch {
-        try {
-          pdfjsLib = await import('pdfjs-dist/build/pdf.js');
-        } catch {
-          pdfjsLib = await import('pdfjs-dist');
-        }
+      // For v4+, need to use the worker path or direct import
+      const pdfjsLib = await import('pdfjs-dist');
+      
+      // Get the getDocument function - it might be at the root or under default
+      let getDocument: any;
+      if (typeof pdfjsLib.getDocument === 'function') {
+        getDocument = pdfjsLib.getDocument;
+      } else if ((pdfjsLib as any).default?.getDocument) {
+        getDocument = (pdfjsLib as any).default.getDocument;
+      } else {
+        // Try accessing it directly from the module
+        const moduleAny = pdfjsLib as any;
+        getDocument = moduleAny.getDocument || moduleAny.default;
+      }
+      
+      if (!getDocument || typeof getDocument !== 'function') {
+        console.error('pdfjs-dist module structure:', Object.keys(pdfjsLib));
+        throw new Error(`Could not find getDocument function. Module keys: ${Object.keys(pdfjsLib).join(', ')}`);
       }
       
       // Load the PDF document
       console.log('Loading PDF document, buffer size:', buffer.length);
-      const loadingTask = pdfjsLib.getDocument({ data: buffer });
+      const loadingTask = getDocument({ data: buffer });
       const pdfDocument = await loadingTask.promise;
       
       // Extract text from all pages
