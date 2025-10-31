@@ -100,12 +100,10 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Extract text from PDF using pdf-parse (dynamic import handles ESM module)
-    // pdf-parse v2.4.5 is ESM-only and may not have a default export
-    const pdfParseModule = await import('pdf-parse');
-    // The module exports the function directly, not as a default export
-    const pdfParse = typeof pdfParseModule === 'function' 
-      ? pdfParseModule 
-      : (pdfParseModule.default || pdfParseModule);
+    // pdf-parse v2.4.5 is ESM-only and exports the function as the module namespace
+    const pdfParseModule = await import('pdf-parse') as any;
+    // Access the default export if it exists, otherwise use the module itself
+    const pdfParse = pdfParseModule.default ?? pdfParseModule;
     const pdfData = await pdfParse(buffer);
     const content = pdfData.text;
 
