@@ -120,6 +120,35 @@ export interface Database {
           updated_at?: string
         }
       }
+      matches: {
+        Row: {
+          id: string
+          startup_id: string
+          investor_id: string
+          match_percentage: number
+          status: 'pending' | 'connected' | 'rejected'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          startup_id: string
+          investor_id: string
+          match_percentage: number
+          status?: 'pending' | 'connected' | 'rejected'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          startup_id?: string
+          investor_id?: string
+          match_percentage?: number
+          status?: 'pending' | 'connected' | 'rejected'
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -129,6 +158,7 @@ export interface Database {
     }
     Enums: {
       user_role: 'startup' | 'investor' | 'admin'
+      match_status: 'pending' | 'connected' | 'rejected'
     }
   }
 }

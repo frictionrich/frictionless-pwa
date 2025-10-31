@@ -1,15 +1,16 @@
 -- Mock Data for Frictionless Platform
--- User ID: d5629bd5-aaaf-42bc-9de4-1f222eacdf7e
--- This script creates a startup profile for ONE existing auth user
+-- This script creates sample startup and investor profiles with matches
 --
 -- IMPORTANT: Before running this script:
--- 1. Create an auth user in Supabase Authentication with UUID: d5629bd5-aaaf-42bc-9de4-1f222eacdf7e
---    - You can do this manually in Supabase Dashboard > Authentication > Users
---    - Or sign up through the app and note the user's UUID
--- 2. Once the auth user exists, run this script to create the profile data
+-- 1. Make sure to run the database migration scripts first:
+--    - 20251031a-add-profile-fields.sql
+--    - 20251031b-create-matches-table.sql
+-- 2. This script creates mock auth.users entries (not real authentication)
+-- 3. For production, users should sign up through the app
 --
--- NOTE: Investor profiles cannot be created via SQL because they require auth users.
--- To test investor functionality, sign up investor accounts through the app's signup flow.
+-- WARNING: This script inserts directly into auth.users which is normally
+-- managed by Supabase Auth. These are test accounts only.
+-- The passwords are dummy hashes and cannot be used to log in.
 
 -- ============================================
 -- DISABLE RLS FOR MOCK DATA INSERTS
@@ -19,17 +20,161 @@
 
 ALTER TABLE profiles DISABLE ROW LEVEL SECURITY;
 ALTER TABLE startup_profiles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE investor_profiles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE matches DISABLE ROW LEVEL SECURITY;
 
 -- ============================================
--- 1. CREATE PROFILE FOR TEST USER
+-- 1. CREATE AUTH USERS
+-- ============================================
+-- Create mock users in auth.users table
+-- Note: These are for testing only. In production, users sign up through the app.
+
+INSERT INTO auth.users (
+  instance_id,
+  id,
+  aud,
+  role,
+  email,
+  encrypted_password,
+  email_confirmed_at,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  created_at,
+  updated_at,
+  confirmation_token,
+  recovery_token
+) VALUES
+  (
+    '00000000-0000-0000-0000-000000000000',
+    'b6b67a3f-8639-4aff-89ad-fb39551f1507',
+    'authenticated',
+    'authenticated',
+    'juan@stealth.com',
+    '$2a$10$dummyhashedpasswordforjuan',
+    NOW() - INTERVAL '30 days',
+    '{"provider":"email","providers":["email"]}',
+    '{}',
+    NOW() - INTERVAL '30 days',
+    NOW(),
+    '',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '10000001-0001-0001-0001-000000000001',
+    'authenticated',
+    'authenticated',
+    'contact@ephemeral.io',
+    '$2a$10$dummyhashedpasswordforinvestor1',
+    NOW() - INTERVAL '180 days',
+    '{"provider":"email","providers":["email"]}',
+    '{}',
+    NOW() - INTERVAL '180 days',
+    NOW(),
+    '',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '20000002-0002-0002-0002-000000000002',
+    'authenticated',
+    'authenticated',
+    'invest@stack3dlab.com',
+    '$2a$10$dummyhashedpasswordforinvestor2',
+    NOW() - INTERVAL '150 days',
+    '{"provider":"email","providers":["email"]}',
+    '{}',
+    NOW() - INTERVAL '150 days',
+    NOW(),
+    '',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '30000003-0003-0003-0003-000000000003',
+    'authenticated',
+    'authenticated',
+    'team@getwarpspeed.com',
+    '$2a$10$dummyhashedpasswordforinvestor3',
+    NOW() - INTERVAL '120 days',
+    '{"provider":"email","providers":["email"]}',
+    '{}',
+    NOW() - INTERVAL '120 days',
+    NOW(),
+    '',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '40000004-0004-0004-0004-000000000004',
+    'authenticated',
+    'authenticated',
+    'hello@cloudwatch.app',
+    '$2a$10$dummyhashedpasswordforinvestor4',
+    NOW() - INTERVAL '90 days',
+    '{"provider":"email","providers":["email"]}',
+    '{}',
+    NOW() - INTERVAL '90 days',
+    NOW(),
+    '',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '50000005-0005-0005-0005-000000000005',
+    'authenticated',
+    'authenticated',
+    'fund@contrastai.com',
+    '$2a$10$dummyhashedpasswordforinvestor5',
+    NOW() - INTERVAL '60 days',
+    '{"provider":"email","providers":["email"]}',
+    '{}',
+    NOW() - INTERVAL '60 days',
+    NOW(),
+    '',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '60000006-0006-0006-0006-000000000006',
+    'authenticated',
+    'authenticated',
+    'team@convergence.io',
+    '$2a$10$dummyhashedpasswordforinvestor6',
+    NOW() - INTERVAL '45 days',
+    '{"provider":"email","providers":["email"]}',
+    '{}',
+    NOW() - INTERVAL '45 days',
+    NOW(),
+    '',
+    ''
+  ),
+  (
+    '00000000-0000-0000-0000-000000000000',
+    '70000007-0007-0007-0007-000000000007',
+    'authenticated',
+    'authenticated',
+    'invest@sisyphus.com',
+    '$2a$10$dummyhashedpasswordforinvestor7',
+    NOW() - INTERVAL '30 days',
+    '{"provider":"email","providers":["email"]}',
+    '{}',
+    NOW() - INTERVAL '30 days',
+    NOW(),
+    '',
+    ''
+  )
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================
+-- 2. CREATE PROFILES
 -- ============================================
 
--- Insert or update profile (as startup)
--- This assumes the auth user d5629bd5-aaaf-42bc-9de4-1f222eacdf7e already exists
+-- Startup profile
 INSERT INTO profiles (id, email, role, created_at, updated_at)
 VALUES (
   'b6b67a3f-8639-4aff-89ad-fb39551f1507',
-  'rich+demo@frictionlessinc.com',
+  'juan@stealth.com',
   'startup',
   NOW() - INTERVAL '30 days',
   NOW()
@@ -37,8 +182,20 @@ VALUES (
 ON CONFLICT (id) DO UPDATE
 SET role = 'startup', updated_at = NOW();
 
+-- Investor profiles
+INSERT INTO profiles (id, email, role, created_at, updated_at) VALUES
+  ('10000001-0001-0001-0001-000000000001', 'contact@ephemeral.io', 'investor', NOW() - INTERVAL '180 days', NOW()),
+  ('20000002-0002-0002-0002-000000000002', 'invest@stack3dlab.com', 'investor', NOW() - INTERVAL '150 days', NOW()),
+  ('30000003-0003-0003-0003-000000000003', 'team@getwarpspeed.com', 'investor', NOW() - INTERVAL '120 days', NOW()),
+  ('40000004-0004-0004-0004-000000000004', 'hello@cloudwatch.app', 'investor', NOW() - INTERVAL '90 days', NOW()),
+  ('50000005-0005-0005-0005-000000000005', 'fund@contrastai.com', 'investor', NOW() - INTERVAL '60 days', NOW()),
+  ('60000006-0006-0006-0006-000000000006', 'team@convergence.io', 'investor', NOW() - INTERVAL '45 days', NOW()),
+  ('70000007-0007-0007-0007-000000000007', 'invest@sisyphus.com', 'investor', NOW() - INTERVAL '30 days', NOW())
+ON CONFLICT (id) DO UPDATE
+SET updated_at = NOW();
+
 -- ============================================
--- 2. CREATE STARTUP PROFILE
+-- 3. CREATE STARTUP PROFILE
 -- ============================================
 
 INSERT INTO startup_profiles (
@@ -60,21 +217,21 @@ INSERT INTO startup_profiles (
   created_at,
   updated_at
 ) VALUES (
-  'd5629bd5-aaaf-42bc-9de4-1f222eacdf7e',
-  'TechVenture AI',
-  'techventure',
-  'AI-powered platform automating business operations for mid-market companies, reducing operational costs by 40% through intelligent workflow optimization.',
-  'https://via.placeholder.com/400x400/28CB88/FFFFFF?text=TV',
-  'https://techventure.ai',
-  'https://techventure.ai/deck.pdf',
-  'TechVenture AI is revolutionizing business automation for mid-market companies. Our AI-powered platform learns your business processes and automatically optimizes workflows, reducing operational costs by an average of 40% while improving accuracy and speed. With our no-code interface, teams can deploy AI automation in days, not months.',
-  'SaaS/B2B/AI & Automation',
+  'b6b67a3f-8639-4aff-89ad-fb39551f1507',
+  'Stealth Startup',
+  'stealth',
+  'Building the future of work automation',
+  'https://via.placeholder.com/400x400/6366F1/FFFFFF?text=SS',
+  'https://stealth.com',
+  'https://stealth.com/deck.pdf',
+  'We are building innovative solutions for the future of work, focusing on AI-powered automation and workflow optimization.',
+  'SaaS/AI & Automation',
   'Seed',
-  82,
-  'techventure-ai',
-  'techventureai',
-  'techventure.ai',
-  'techventureai',
+  75,
+  'stealth-startup',
+  'stealthstartup',
+  'stealth.startup',
+  'stealthstartup',
   NOW() - INTERVAL '30 days',
   NOW()
 )
@@ -95,36 +252,205 @@ ON CONFLICT (user_id) DO UPDATE SET
   updated_at = NOW();
 
 -- ============================================
+-- 4. CREATE INVESTOR PROFILES
+-- ============================================
+
+INSERT INTO investor_profiles (
+  user_id,
+  organization_name,
+  username,
+  tagline,
+  logo_url,
+  website,
+  focus_sectors,
+  focus_stages,
+  ticket_size_min,
+  ticket_size_max,
+  created_at,
+  updated_at
+) VALUES
+  (
+    '10000001-0001-0001-0001-000000000001',
+    'Ephemeral',
+    'ephemeral',
+    'Early-stage ventures in AI and automation',
+    'https://via.placeholder.com/400x400/6366F1/FFFFFF?text=E',
+    'ephemeral.io',
+    ARRAY['SaaS', 'AI/ML', 'Automation'],
+    ARRAY['Pre-seed', 'Seed'],
+    500000,
+    1000000,
+    NOW() - INTERVAL '180 days',
+    NOW()
+  ),
+  (
+    '20000002-0002-0002-0002-000000000002',
+    'Stack3d Lab',
+    'stack3dlab',
+    'Building the next generation of B2B software',
+    'https://via.placeholder.com/400x400/3B82F6/FFFFFF?text=S3',
+    'stack3dlab.com',
+    ARRAY['SaaS', 'B2B', 'FinTech'],
+    ARRAY['Seed', 'Series A'],
+    500000,
+    1000000,
+    NOW() - INTERVAL '150 days',
+    NOW()
+  ),
+  (
+    '30000003-0003-0003-0003-000000000003',
+    'Warpspeed',
+    'warpspeed',
+    'Accelerating innovation at the speed of light',
+    'https://via.placeholder.com/400x400/1F2937/FFFFFF?text=W',
+    'getwarpspeed.com',
+    ARRAY['SaaS', 'AI/ML', 'Productivity'],
+    ARRAY['Pre-seed', 'Seed'],
+    500000,
+    1000000,
+    NOW() - INTERVAL '120 days',
+    NOW()
+  ),
+  (
+    '40000004-0004-0004-0004-000000000004',
+    'CloudWatch',
+    'cloudwatch',
+    'Infrastructure and cloud-native investments',
+    'https://via.placeholder.com/400x400/3B82F6/FFFFFF?text=CW',
+    'cloudwatch.app',
+    ARRAY['SaaS', 'Cloud', 'Infrastructure'],
+    ARRAY['Seed', 'Series A'],
+    500000,
+    1000000,
+    NOW() - INTERVAL '90 days',
+    NOW()
+  ),
+  (
+    '50000005-0005-0005-0005-000000000005',
+    'ContrastAI',
+    'contrastai',
+    'AI-first fund backing transformative technologies',
+    'https://via.placeholder.com/400x400/8B5CF6/FFFFFF?text=CAI',
+    'contrastai.com',
+    ARRAY['AI/ML', 'Deep Tech'],
+    ARRAY['Seed', 'Series A'],
+    500000,
+    1000000,
+    NOW() - INTERVAL '60 days',
+    NOW()
+  ),
+  (
+    '60000006-0006-0006-0006-000000000006',
+    'Convergence',
+    'convergence',
+    'Where technology meets opportunity',
+    'https://via.placeholder.com/400x400/1F2937/FFFFFF?text=C',
+    'convergence.io',
+    ARRAY['E-commerce', 'Marketplace', 'Consumer'],
+    ARRAY['Pre-seed', 'Seed'],
+    500000,
+    1000000,
+    NOW() - INTERVAL '45 days',
+    NOW()
+  ),
+  (
+    '70000007-0007-0007-0007-000000000007',
+    'Sisyphus',
+    'sisyphus',
+    'Patient capital for ambitious founders',
+    'https://via.placeholder.com/400x400/10B981/FFFFFF?text=S',
+    'sisyphus.com',
+    ARRAY['HealthTech', 'BioTech', 'Science'],
+    ARRAY['Seed', 'Series A'],
+    500000,
+    1000000,
+    NOW() - INTERVAL '30 days',
+    NOW()
+  )
+ON CONFLICT (user_id) DO UPDATE SET
+  organization_name = EXCLUDED.organization_name,
+  username = EXCLUDED.username,
+  tagline = EXCLUDED.tagline,
+  website = EXCLUDED.website,
+  focus_sectors = EXCLUDED.focus_sectors,
+  focus_stages = EXCLUDED.focus_stages,
+  ticket_size_min = EXCLUDED.ticket_size_min,
+  ticket_size_max = EXCLUDED.ticket_size_max,
+  updated_at = NOW();
+
+-- ============================================
+-- 5. CREATE MATCHES
+-- ============================================
+
+INSERT INTO matches (startup_id, investor_id, match_percentage, status, created_at, updated_at) VALUES
+  ('b6b67a3f-8639-4aff-89ad-fb39551f1507', '10000001-0001-0001-0001-000000000001', 92, 'pending', NOW() - INTERVAL '5 days', NOW()),
+  ('b6b67a3f-8639-4aff-89ad-fb39551f1507', '20000002-0002-0002-0002-000000000002', 92, 'pending', NOW() - INTERVAL '5 days', NOW()),
+  ('b6b67a3f-8639-4aff-89ad-fb39551f1507', '30000003-0003-0003-0003-000000000003', 92, 'pending', NOW() - INTERVAL '4 days', NOW()),
+  ('b6b67a3f-8639-4aff-89ad-fb39551f1507', '40000004-0004-0004-0004-000000000004', 92, 'pending', NOW() - INTERVAL '3 days', NOW()),
+  ('b6b67a3f-8639-4aff-89ad-fb39551f1507', '50000005-0005-0005-0005-000000000005', 65, 'pending', NOW() - INTERVAL '2 days', NOW()),
+  ('b6b67a3f-8639-4aff-89ad-fb39551f1507', '60000006-0006-0006-0006-000000000006', 20, 'pending', NOW() - INTERVAL '1 day', NOW()),
+  ('b6b67a3f-8639-4aff-89ad-fb39551f1507', '70000007-0007-0007-0007-000000000007', 20, 'pending', NOW(), NOW())
+ON CONFLICT (startup_id, investor_id) DO UPDATE SET
+  match_percentage = EXCLUDED.match_percentage,
+  status = EXCLUDED.status,
+  updated_at = NOW();
+
+-- ============================================
 -- RE-ENABLE RLS
 -- ============================================
 -- Re-enable Row Level Security after inserting mock data
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE startup_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE investor_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE matches ENABLE ROW LEVEL SECURITY;
 
 -- ============================================
 -- SUMMARY
 -- ============================================
 -- Mock data created for:
--- ✓ 1 Startup profile (TechVenture AI) - User ID: d5629bd5-aaaf-42bc-9de4-1f222eacdf7e
+-- ✓ 8 Auth users (1 startup + 7 investors)
+-- ✓ 8 Profiles (1 startup + 7 investors)
+-- ✓ 1 Startup profile (Stealth Startup)
+-- ✓ 7 Investor profiles (Ephemeral, Stack3d Lab, Warpspeed, CloudWatch, ContrastAI, Convergence, Sisyphus)
+-- ✓ 7 Matches with varying percentages (92%, 92%, 92%, 92%, 65%, 20%, 20%)
 --
 -- To use this data:
--- 1. Make sure the auth user exists in Supabase Authentication first
+-- 1. Make sure to run all migration scripts first
 -- 2. Run this SQL in your Supabase SQL editor
--- 3. Log in as demo@techstartup.io to see the startup dashboard
+-- 3. The mock users are created but with dummy passwords
+-- 4. To actually log in, you'll need to reset passwords via Supabase Dashboard
+--    or create new users through the app signup flow
 --
--- To test investor matching:
--- 1. Create investor accounts by signing up through the app at /auth/signup
--- 2. Select "Investor" role during signup
--- 3. Complete the investor onboarding flow
--- 4. Those investor profiles will then appear in the startup's dashboard
---
--- Note: You cannot create investor profiles via SQL because they require
--- real auth users to exist first. The app's signup flow handles this automatically.
+-- Test Users Created:
+-- - juan@stealth.com (startup)
+-- - contact@ephemeral.io (investor)
+-- - invest@stack3dlab.com (investor)
+-- - team@getwarpspeed.com (investor)
+-- - hello@cloudwatch.app (investor)
+-- - fund@contrastai.com (investor)
+-- - team@convergence.io (investor)
+-- - invest@sisyphus.com (investor)
 -- ============================================
 
--- Verification query
-SELECT 'Mock startup profile created successfully!' as status;
+-- Verification queries
+SELECT 'Mock data created successfully!' as status;
+
+SELECT 'Startup Profile:' as section;
 SELECT company_name, sector, stage, readiness_score
 FROM startup_profiles
 WHERE user_id = 'b6b67a3f-8639-4aff-89ad-fb39551f1507';
+
+SELECT 'Investor Profiles:' as section;
+SELECT COUNT(*) as total_investors
+FROM investor_profiles;
+
+SELECT 'Matches:' as section;
+SELECT
+  ip.organization_name,
+  m.match_percentage,
+  m.status
+FROM matches m
+JOIN investor_profiles ip ON ip.user_id = m.investor_id
+WHERE m.startup_id = 'b6b67a3f-8639-4aff-89ad-fb39551f1507'
+ORDER BY m.match_percentage DESC;
