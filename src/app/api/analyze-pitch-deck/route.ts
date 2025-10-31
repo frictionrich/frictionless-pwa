@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { PDFParse } from 'pdf-parse';
+import pdfParse from 'pdf-parse';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -9,6 +9,7 @@ const openai = new OpenAI({
 // Configure route segment for larger body size (4.5MB for Vercel)
 export const maxDuration = 60; // 60 seconds timeout
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs'; // Required for Node.js APIs like Buffer
 
 const PITCH_DECK_ANALYZER_PROMPT = `You are a Frictionless Intelligence analyst evaluating startup pitch decks. Extract and structure information in JSON format for a comprehensive Funding Intelligence Report.
 
@@ -100,9 +101,8 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Extract text from PDF using pdf-parse
-    const pdfParser = new PDFParse({ data: buffer });
-    const textResult = await pdfParser.getText();
-    const content = textResult.text;
+    const pdfData = await pdfParse(buffer);
+    const content = pdfData.text;
 
     if (!content || content.trim().length < 100) {
       return NextResponse.json(
