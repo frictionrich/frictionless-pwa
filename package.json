@@ -23,7 +23,7 @@
     "lucide-react": "^0.456.0",
     "next": "14.2.18",
     "openai": "^6.7.0",
-    "pdfjs-dist": "^4.0.379",
+    "pdf2json": "^3.1.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.2",

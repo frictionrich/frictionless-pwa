@@ -99,77 +99,56 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
 
-    // Extract text from PDF using pdfjs-dist (Mozilla's PDF.js - Node.js compatible)
+    // Extract text from PDF using pdf2json (simple, server-side friendly)
     let content: string;
     try {
-      console.log('Importing pdfjs-dist...');
-      // Use pdfjs-dist legacy build for Node.js (doesn't require workers)
-      // Try legacy build first, then fall back to regular import
-      let pdfjsLib: any;
-      try {
-        // Try legacy build which doesn't require workers
-        pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
-      } catch {
-        // Fall back to regular import
-        pdfjsLib = await import('pdfjs-dist');
-      }
+      console.log('Importing pdf2json...');
+      // Use pdf2json which is designed for Node.js/serverless environments
+      const PDFParser = (await import('pdf2json')).default || (await import('pdf2json') as any);
       
-      // Get the getDocument function - it might be at the root or under default
-      let getDocument: any;
-      if (typeof pdfjsLib.getDocument === 'function') {
-        getDocument = pdfjsLib.getDocument;
-      } else if ((pdfjsLib as any).default?.getDocument) {
-        getDocument = (pdfjsLib as any).default.getDocument;
-      } else {
-        // Try accessing it directly from the module
-        const moduleAny = pdfjsLib as any;
-        getDocument = moduleAny.getDocument || moduleAny.default;
-      }
+      // Create parser instance
+      const pdfParser = new PDFParser(null, 1);
       
-      if (!getDocument || typeof getDocument !== 'function') {
-        console.error('pdfjs-dist module structure:', Object.keys(pdfjsLib));
-        throw new Error(`Could not find getDocument function. Module keys: ${Object.keys(pdfjsLib).join(', ')}`);
-      }
-      
-      // Configure pdfjs-dist to work in serverless environment (disable worker)
-      // For Node.js/serverless, disable workers completely
-      if ((pdfjsLib as any).GlobalWorkerOptions) {
-        (pdfjsLib as any).GlobalWorkerOptions.workerSrc = '';
-      }
-      
-      // Set verbosity to suppress worker warnings
-      if ((pdfjsLib as any).setVerbosityLevel) {
-        (pdfjsLib as any).setVerbosityLevel(0);
-      }
-      
-      // Load the PDF document (pdfjs-dist requires Uint8Array)
-      // Disable workers completely for serverless
-      console.log('Loading PDF document, buffer size:', uint8Array.length);
-      const loadingTask = getDocument({ 
-        data: uint8Array,
-        useSystemFonts: true,
-        verbosity: 0,
-        // Disable worker completely
-        disableAutoFetch: true,
-        disableStream: true,
+      // Set up promise to wait for parsing completion
+      const parsePromise = new Promise<string>((resolve, reject) => {
+        pdfParser.on('pdfParser_dataError', (errData: any) => {
+          console.error('PDF parsing error:', errData);
+          reject(new Error(`PDF parsing error: ${errData.parserError}`));
+        });
+        
+        pdfParser.on('pdfParser_dataReady', (pdfData: any) => {
+          // Extract text from all pages
+          let fullText = '';
+          if (pdfData.Pages && pdfData.Pages.length > 0) {
+            for (const page of pdfData.Pages) {
+              if (page.Texts && page.Texts.length > 0) {
+                for (const text of page.Texts) {
+                  if (text.R && text.R.length > 0) {
+                    for (const r of text.R) {
+                      if (r.T) {
+                        // Decode URI component to handle special characters
+                        try {
+                          fullText += decodeURIComponent(r.T) + ' ';
+                        } catch {
+                          fullText += r.T + ' ';
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          resolve(fullText.trim());
+        });
       });
-      const pdfDocument = await loadingTask.promise;
       
-      // Extract text from all pages
-      let fullText = '';
-      const numPages = pdfDocument.numPages;
-      console.log(`PDF has ${numPages} pages`);
+      // Parse the PDF buffer
+      console.log('Parsing PDF, buffer size:', uint8Array.length);
+      pdfParser.parseBuffer(Buffer.from(uint8Array));
       
-      for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-        const page = await pdfDocument.getPage(pageNum);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items
-          .map((item: any) => item.str)
-          .join(' ');
-        fullText += pageText + '\n';
-      }
-      
-      content = fullText.trim();
+      // Wait for parsing to complete
+      content = await parsePromise;
       console.log('PDF text extracted, length:', content.length);
     } catch (parseError: any) {
       console.error('PDF parsing error:', parseError);
