@@ -32,7 +32,16 @@ export default function InvestorOnboardingPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFormData({ ...formData, investorDeckFile: e.target.files[0] });
+      const file = e.target.files[0];
+      const maxSize = 4.5 * 1024 * 1024; // 4.5MB in bytes
+
+      if (file.size > maxSize) {
+        setError('File size exceeds 4.5MB limit. Please upload a smaller file.');
+        return;
+      }
+
+      setError(''); // Clear any previous errors
+      setFormData({ ...formData, investorDeckFile: file });
     }
   };
 
@@ -361,7 +370,7 @@ export default function InvestorOnboardingPage() {
                             Drag and drop or click to upload
                           </p>
                           <p className="text-body-3 text-neutral-grey">
-                            PDF, PPT, or PPTX (max 50MB)
+                            PDF, PPT, or PPTX (max 4.5MB)
                           </p>
                         </div>
                       )}

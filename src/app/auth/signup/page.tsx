@@ -229,7 +229,7 @@ function SignUpForm() {
       </div>
 
       {/* Right side - Image */}
-      <div className="hidden lg:block lg:w-1/2 bg-gradient-to-br from-tint-3 to-tint-5 relative overflow-hidden">
+      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
         <div className="h-full w-full relative">
           <Image
             src={role === 'startup' ? '/startup-sidebar.png' : '/investor-sidebar.png'}

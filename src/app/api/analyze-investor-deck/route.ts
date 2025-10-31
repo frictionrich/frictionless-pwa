@@ -5,6 +5,10 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// Configure route segment for larger body size (4.5MB for Vercel)
+export const maxDuration = 60; // 60 seconds timeout
+export const dynamic = 'force-dynamic';
+
 const INVESTOR_DECK_ANALYZER_PROMPT = `You are a Frictionless Intelligence analyst evaluating investor/fund profiles. Extract and structure information in JSON format for comprehensive investor reports.
 
 Analyze the investor deck or profile and extract the following information in valid JSON format:
@@ -45,6 +49,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'No content provided' },
         { status: 400 }
+      );
+    }
+
+    // Check content size (roughly 4.5MB limit for Vercel)
+    const maxSize = 4.5 * 1024 * 1024; // 4.5MB in bytes
+    const contentSize = new Blob([content]).size;
+    if (contentSize > maxSize) {
+      return NextResponse.json(
+        { error: 'File content exceeds 4.5MB limit. Please upload a smaller file.' },
+        { status: 413 }
       );
     }
 

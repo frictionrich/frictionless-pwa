@@ -6,6 +6,10 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// Configure route segment for larger body size (4.5MB for Vercel)
+export const maxDuration = 60; // 60 seconds timeout
+export const dynamic = 'force-dynamic';
+
 const PITCH_DECK_ANALYZER_PROMPT = `You are a Frictionless Intelligence analyst evaluating startup pitch decks. Extract and structure information in JSON format for a comprehensive Funding Intelligence Report.
 
 Analyze the pitch deck and extract the following information in valid JSON format:
@@ -71,6 +75,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'No file provided' },
         { status: 400 }
+      );
+    }
+
+    // Check file size (4.5MB limit for Vercel)
+    const maxSize = 4.5 * 1024 * 1024; // 4.5MB in bytes
+    if (file.size > maxSize) {
+      return NextResponse.json(
+        { error: 'File size exceeds 4.5MB limit. Please upload a smaller file.' },
+        { status: 413 }
       );
     }
 
