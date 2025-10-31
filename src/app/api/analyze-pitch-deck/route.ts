@@ -133,27 +133,42 @@ export async function POST(request: NextRequest) {
               
               // Try different possible text structures
               if (page.Texts && Array.isArray(page.Texts) && page.Texts.length > 0) {
+                console.log(`Page ${i + 1}: Found ${page.Texts.length} text items`);
+                console.log(`First text item sample:`, JSON.stringify(page.Texts[0]).substring(0, 200));
+                
                 for (const text of page.Texts) {
+                  // Check if text has R array (run array)
                   if (text.R && Array.isArray(text.R)) {
                     for (const r of text.R) {
-                      if (r.T) {
+                      if (r.T !== undefined && r.T !== null) {
                         // Decode URI component to handle special characters
                         try {
-                          fullText += decodeURIComponent(r.T) + ' ';
+                          const decoded = decodeURIComponent(r.T);
+                          fullText += decoded + ' ';
                         } catch {
-                          fullText += r.T + ' ';
+                          // If decode fails, use as-is
+                          fullText += String(r.T) + ' ';
                         }
                       }
                     }
-                  } else if (text.T) {
-                    // Sometimes text is directly in T property
+                  } 
+                  // Sometimes text is directly in T property (without R array)
+                  else if (text.T !== undefined && text.T !== null) {
                     try {
-                      fullText += decodeURIComponent(text.T) + ' ';
+                      const decoded = decodeURIComponent(text.T);
+                      fullText += decoded + ' ';
                     } catch {
-                      fullText += text.T + ' ';
+                      fullText += String(text.T) + ' ';
                     }
                   }
+                  // Sometimes text might be in a different format
+                  else if (text.w) {
+                    // Some PDFs store text width-based
+                    fullText += String(text.w) + ' ';
+                  }
                 }
+              } else if (page.Texts && Array.isArray(page.Texts)) {
+                console.log(`Page ${i + 1}: Texts array exists but is empty`);
               }
               
               // Also check if there's a FillTexts property
