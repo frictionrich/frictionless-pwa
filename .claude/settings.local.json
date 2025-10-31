@@ -21,7 +21,9 @@
       "Bash(findstr:*)",
       "Bash(dir:*)",
       "Bash(where:*)",
-      "Bash(node scripts/resize-icons.js:*)"
+      "Bash(node scripts/resize-icons.js:*)",
+      "Bash(del:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []

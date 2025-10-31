@@ -1,18 +1,47 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase/client';
+import { Sidebar } from '@/components/layout/Sidebar';
 import { Card, CardContent } from '@/components/ui/Card';
 
 export default function InvestorsPage() {
-  return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-h2 font-semibold mb-2">Investors</h1>
-        <p className="text-body-2 text-neutral-grey">
-          Browse and connect with investors that match your startup
-        </p>
-      </div>
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-      <Card>
+  useEffect(() => {
+    async function loadUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/auth/login');
+        return;
+      }
+      setUser(user);
+      setLoading(false);
+    }
+    loadUser();
+  }, [router]);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  return (
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar role="startup" userName={user?.user_metadata?.name} userEmail={user?.email} />
+
+      <main className="flex-1 overflow-y-auto bg-neutral-silver">
+        <div className="container max-w-4xl mx-auto px-6 py-8">
+          <div className="mb-8">
+            <h1 className="text-h2 font-semibold mb-2">Investors</h1>
+            <p className="text-body-2 text-neutral-grey">
+              Browse and connect with investors that match your startup
+            </p>
+          </div>
+
+          <Card>
         <CardContent className="py-16">
           <div className="text-center">
             <div className="mb-6">
@@ -52,6 +81,8 @@ export default function InvestorsPage() {
           </div>
         </CardContent>
       </Card>
+        </div>
+      </main>
     </div>
   );
 }
