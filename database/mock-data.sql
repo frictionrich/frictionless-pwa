@@ -3,6 +3,16 @@
 -- This script creates realistic mock data to showcase all platform features
 
 -- ============================================
+-- DISABLE RLS FOR MOCK DATA INSERTS
+-- ============================================
+-- RLS policies require auth.uid() which is NULL when running SQL scripts directly
+-- We temporarily disable RLS, insert the data, then re-enable it
+
+ALTER TABLE profiles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE startup_profiles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE investor_profiles DISABLE ROW LEVEL SECURITY;
+
+-- ============================================
 -- 1. CREATE PROFILE FOR TEST USER
 -- ============================================
 
@@ -360,6 +370,15 @@ BEGIN
     focus_stages = EXCLUDED.focus_stages,
     updated_at = NOW();
 END $$;
+
+-- ============================================
+-- RE-ENABLE RLS
+-- ============================================
+-- Re-enable Row Level Security after inserting mock data
+
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE startup_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE investor_profiles ENABLE ROW LEVEL SECURITY;
 
 -- ============================================
 -- SUMMARY

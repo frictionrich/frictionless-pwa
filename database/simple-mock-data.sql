@@ -10,6 +10,13 @@
 -- This will create demo investor profiles that will show up in your startup dashboard
 
 -- ============================================
+-- DISABLE RLS FOR MOCK DATA INSERTS
+-- ============================================
+-- RLS policies require auth.uid() which is NULL when running SQL scripts directly
+
+ALTER TABLE investor_profiles DISABLE ROW LEVEL SECURITY;
+
+-- ============================================
 -- INSERT MOCK INVESTOR PROFILES
 -- (These don't need auth users - they're just data)
 -- ============================================
@@ -285,6 +292,12 @@ ON CONFLICT (user_id) DO UPDATE SET
   company_name = EXCLUDED.company_name,
   updated_at = NOW();
 */
+
+-- ============================================
+-- RE-ENABLE RLS
+-- ============================================
+
+ALTER TABLE investor_profiles ENABLE ROW LEVEL SECURITY;
 
 -- ============================================
 -- VERIFICATION

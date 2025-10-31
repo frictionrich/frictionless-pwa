@@ -70,9 +70,10 @@ export default function StartupDashboard() {
   // Format ticket size
   const formatTicketSize = (min?: number, max?: number) => {
     if (!min && !max) return 'Not specified';
-    if (!min) return `Up to ${formatCurrency(max)}`;
-    if (!max) return `From ${formatCurrency(min)}`;
-    return `${formatCurrency(min)} - ${formatCurrency(max)}`;
+    if (!min && max) return `Up to ${formatCurrency(max)}`;
+    if (min && !max) return `From ${formatCurrency(min)}`;
+    if (min && max) return `${formatCurrency(min)} - ${formatCurrency(max)}`;
+    return 'Not specified';
   };
 
   // Calculate stats
