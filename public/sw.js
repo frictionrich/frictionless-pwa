@@ -27,6 +27,11 @@ self.addEventListener('fetch', (event) => {
   const isApiRoute = url.pathname.startsWith('/api/');
   const isNonGetRequest = event.request.method !== 'GET';
 
+  // Debug logging for API routes
+  if (isApiRoute) {
+    console.log('[SW v3] Skipping API route:', event.request.method, url.pathname);
+  }
+
   if (isExternalRequest || isApiRoute || isNonGetRequest) {
     // Let the browser handle this request without service worker intervention
     return;

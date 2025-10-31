@@ -68,6 +68,7 @@ function SignUpForm() {
             name: formData.name,
             role: role,
           },
+          emailRedirectTo: `${window.location.origin}/onboarding/${role}`,
         },
       });
 
