@@ -65,7 +65,7 @@ export default function StartupOnboardingPage() {
         // Upload file
         console.log('Uploading pitch deck...');
         const fileExt = formData.pitchDeckFile.name.split('.').pop();
-        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+        const fileName = `${user.id}/pitch-deck-${Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from('pitch-decks')
           .upload(fileName, formData.pitchDeckFile);

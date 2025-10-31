@@ -80,7 +80,7 @@ export default function InvestorOnboardingPage() {
       if (formData.investorDeckFile) {
         // Upload file
         const fileExt = formData.investorDeckFile.name.split('.').pop();
-        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+        const fileName = `${user.id}/investor-deck-${Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from('investor-decks')
           .upload(fileName, formData.investorDeckFile);

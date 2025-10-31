@@ -81,7 +81,7 @@ export default function InvestorSettingsPage() {
       // Upload logo if new file selected
       if (formData.logoFile) {
         const fileExt = formData.logoFile.name.split('.').pop();
-        const fileName = `${user.id}-logo-${Date.now()}.${fileExt}`;
+        const fileName = `${user.id}/logo-${Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from('logos')
           .upload(fileName, formData.logoFile);
