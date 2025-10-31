@@ -1,5 +1,5 @@
 // Service Worker for PWA
-const CACHE_NAME = 'frictionless-v2';
+const CACHE_NAME = 'frictionless-v3';
 const urlsToCache = [
   '/',
   '/logo.png',
@@ -19,12 +19,17 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Don't cache API calls to Supabase, any external APIs, or non-GET requests
-  // Let the browser handle these normally by not calling event.respondWith()
-  if (url.hostname.includes('supabase.co') ||
-      url.pathname.includes('/api/') ||
-      event.request.method !== 'GET') {
-    return; // Service worker will not handle this request
+  // Skip service worker for:
+  // 1. External domains (like Supabase)
+  // 2. API routes
+  // 3. Non-GET requests (POST, PUT, DELETE, etc.)
+  const isExternalRequest = url.origin !== location.origin;
+  const isApiRoute = url.pathname.startsWith('/api/');
+  const isNonGetRequest = event.request.method !== 'GET';
+
+  if (isExternalRequest || isApiRoute || isNonGetRequest) {
+    // Let the browser handle this request without service worker intervention
+    return;
   }
 
   event.respondWith(
