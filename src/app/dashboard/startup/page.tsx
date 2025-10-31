@@ -32,30 +32,45 @@ export default function StartupDashboard() {
         .single();
 
       // Load matches for this startup with investor details
-      const { data: matchesData } = await supabase
+      const { data: matchesData, error: matchesError } = await supabase
         .from('matches')
         .select(`
-          *,
-          investor:investor_id (
-            id,
-            user_id,
-            organization_name,
-            website,
-            logo_url,
-            focus_sectors,
-            focus_stages,
-            ticket_size_min,
-            ticket_size_max,
-            tagline
-          )
+          id,
+          startup_id,
+          investor_id,
+          match_percentage,
+          status,
+          created_at,
+          updated_at
         `)
         .eq('startup_id', user.id)
         .order('match_percentage', { ascending: false })
         .limit(7);
 
+      // If we have matches, fetch the investor details separately
+      let enrichedMatches: any[] = [];
+      if (matchesData && matchesData.length > 0) {
+        const investorIds = matchesData.map(m => m.investor_id);
+
+        const { data: investorsData } = await supabase
+          .from('investor_profiles')
+          .select('*')
+          .in('user_id', investorIds);
+
+        // Combine matches with investor data
+        enrichedMatches = matchesData.map(match => ({
+          ...match,
+          investor: investorsData?.find(inv => inv.user_id === match.investor_id)
+        }));
+      }
+
+      if (matchesError) {
+        console.error('Error loading matches:', matchesError);
+      }
+
       setUser(user);
       setProfile(profile);
-      setMatches(matchesData || []);
+      setMatches(enrichedMatches);
       setLoading(false);
     }
 
