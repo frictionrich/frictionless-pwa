@@ -28,8 +28,8 @@ ALTER TABLE startup_profiles DISABLE ROW LEVEL SECURITY;
 -- This assumes the auth user d5629bd5-aaaf-42bc-9de4-1f222eacdf7e already exists
 INSERT INTO profiles (id, email, role, created_at, updated_at)
 VALUES (
-  'd5629bd5-aaaf-42bc-9de4-1f222eacdf7e',
-  'demo@techstartup.io',
+  'b6b67a3f-8639-4aff-89ad-fb39551f1507',
+  'rich+demo@frictionlessinc.com',
   'startup',
   NOW() - INTERVAL '30 days',
   NOW()
@@ -127,4 +127,4 @@ ALTER TABLE startup_profiles ENABLE ROW LEVEL SECURITY;
 SELECT 'Mock startup profile created successfully!' as status;
 SELECT company_name, sector, stage, readiness_score
 FROM startup_profiles
-WHERE user_id = 'd5629bd5-aaaf-42bc-9de4-1f222eacdf7e';
+WHERE user_id = 'b6b67a3f-8639-4aff-89ad-fb39551f1507';
