@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import fs from 'fs';
+import path from 'path';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -10,54 +12,11 @@ export const maxDuration = 60; // 60 seconds timeout
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs'; // Required for Node.js APIs like Buffer
 
-const INVESTOR_DECK_ANALYZER_PROMPT = `You are a Frictionless Intelligence analyst evaluating investor/fund profiles. Extract and structure information in JSON format for comprehensive investor reports.
-
-Analyze the investor deck or profile and extract the following information in valid JSON format:
-
-{
-  "fund_name": "string",
-  "investor_name": "string (individual investor name if applicable)",
-  "headquarters": "string (City, State/Country)",
-  "fund_size": "string (e.g., '$50M' or 'Angel Investor')",
-  "average_ticket": "string (e.g., '$25K-$150K')",
-  "stage_focus": "array of stages (Pre-seed, Seed, Series A, etc.)",
-  "sector_focus": "array of sectors/industries",
-  "geography_focus": "array of geographic regions",
-  "investment_thesis": "string (detailed investment philosophy)",
-  "portfolio_highlights": "array of portfolio company names",
-  "investment_criteria": {
-    "minimum_revenue": "string or null",
-    "team_requirements": "string",
-    "other_requirements": "string"
-  },
-  "value_add": "string (how they help portfolio companies)",
-  "decision_process": "string (how they make investment decisions)",
-  "timeline": "string (typical decision timeline)",
-  "frictionless_insights": {
-    "strongest_startup_types": "string (sectors, geographies, stages they match best)",
-    "readiness_range": "string (typical readiness scores they target, e.g., '60-80%')",
-    "ideal_coinvestment": "string (preferred co-investment conditions)"
-  }
-}
-
-Return ONLY valid JSON with no markdown formatting. Ensure all fields are populated with realistic values based on the investor deck content. If information is not available, use null for specific fields or empty strings/arrays for text fields.
-
-IMPORTANT: Populate all fields based on the deck content:
-- fund_name: Organization or fund name
-- investor_name: Individual's name if it's a personal investor
-- headquarters: City, State/Country
-- fund_size: Total AUM or investment capacity
-- average_ticket: Typical check size range
-- stage_focus: Investment stages (Pre-seed, Seed, Series A, etc.)
-- sector_focus: Target industries/sectors
-- geography_focus: Geographic preferences
-- investment_thesis: Investment philosophy and approach
-- portfolio_highlights: Notable portfolio companies
-- investment_criteria: Specific requirements (revenue, team, etc.)
-- value_add: How they support beyond capital
-- decision_process: Investment decision workflow
-- timeline: Typical time from pitch to close
-- frictionless_insights: Analysis of best-fit startup types`;
+// Load the investor deck analyzer prompt from file
+const INVESTOR_DECK_ANALYZER_PROMPT = fs.readFileSync(
+  path.join(process.cwd(), 'ai_prompts', 'investor_deck_analyzer.txt'),
+  'utf-8'
+);
 
 export async function POST(request: NextRequest) {
   try {
@@ -209,17 +168,16 @@ export async function POST(request: NextRequest) {
     console.log('Extracted text length:', content.length);
     console.log('First 200 chars:', content.substring(0, 200));
 
+    // Replace the placeholder in the prompt with the actual deck content
+    const promptWithContent = INVESTOR_DECK_ANALYZER_PROMPT.replace('{{INVESTOR_DECK_TEXT}}', content);
+
     // Analyze with OpenAI
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
-          content: INVESTOR_DECK_ANALYZER_PROMPT,
-        },
-        {
-          role: 'user',
-          content: `Analyze this investor deck or profile content:\n\nFile: ${file.name}\n\nContent:\n${content}`,
+          content: promptWithContent,
         },
       ],
       temperature: 0.3,
