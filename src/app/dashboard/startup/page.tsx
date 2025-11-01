@@ -314,7 +314,13 @@ export default function StartupDashboard() {
               <CardContent>
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-body-3 text-neutral-grey">Readiness Score</p>
-                  <Button variant="tertiary" size="small">View More</Button>
+                  <Button
+                    variant="tertiary"
+                    size="small"
+                    onClick={() => router.push('/dashboard/startup/readiness')}
+                  >
+                    View More
+                  </Button>
                 </div>
                 <p className="text-h1 font-semibold">
                   {readinessScore > 0 ? `${Math.round(readinessScore)}%` : 'Not assessed'}
