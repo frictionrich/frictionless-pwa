@@ -17,6 +17,8 @@ export default function StartupDashboard() {
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAllMatches, setShowAllMatches] = useState(false);
+  const [lastDeckUploadedAt, setLastDeckUploadedAt] = useState<Date | null>(null);
+  const [hasDeckUploaded, setHasDeckUploaded] = useState(false);
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -70,6 +72,23 @@ export default function StartupDashboard() {
         console.error('Error loading matches:', matchesError);
       }
 
+      // Get the latest pitch deck upload timestamp from storage
+      const { data: files, error: storageError } = await supabase
+        .storage
+        .from('pitch-decks')
+        .list(user.id, {
+          limit: 1,
+          offset: 0,
+          sortBy: { column: 'created_at', order: 'desc' }
+        });
+
+      if (!storageError && files && files.length > 0) {
+        setHasDeckUploaded(true);
+        setLastDeckUploadedAt(new Date(files[0].created_at));
+      } else {
+        setHasDeckUploaded(false);
+      }
+
       setUser(user);
       setProfile(profile);
       setMatches(enrichedMatches);
@@ -83,16 +102,8 @@ export default function StartupDashboard() {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  // Check if profile is empty (no AI analysis done)
-  const hasProfileData = profile && (
-    profile.company_name ||
-    profile.industry ||
-    profile.stage ||
-    profile.readiness_score
-  );
-
-  // If no profile data and no matches, show upload prompt only
-  if (!hasProfileData && matches.length === 0) {
+  // If no deck uploaded, show upload prompt only
+  if (!hasDeckUploaded) {
     return (
       <div className="flex h-screen overflow-hidden">
         <Sidebar role="startup" userName={user?.user_metadata?.name} userEmail={user?.email} />
@@ -311,9 +322,9 @@ export default function StartupDashboard() {
                       <div className="flex-1">
                         <p className="text-body-3-medium text-neutral-black">Upload New Deck</p>
                         <p className="text-body-4 text-neutral-grey">Update your pitch deck to improve your profile.</p>
-                        {profile?.updated_at && (
+                        {lastDeckUploadedAt && (
                           <p className="text-body-4 text-neutral-grey mt-1">
-                            Last uploaded {formatDistanceToNow(new Date(profile.updated_at), { addSuffix: true })}
+                            Last deck uploaded {formatDistanceToNow(lastDeckUploadedAt, { addSuffix: true })}
                           </p>
                         )}
                       </div>
