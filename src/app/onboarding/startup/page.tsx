@@ -137,30 +137,52 @@ export default function StartupOnboardingPage() {
       console.log('Startup profile created successfully!');
 
       // Store readiness assessment if AI analysis was performed
+      console.log('Checking readiness assessment conditions:');
+      console.log('- analysis exists:', !!analysis);
+      console.log('- analysis.readiness_assessment exists:', !!analysis?.readiness_assessment);
+      console.log('- pitchDeckUrl exists:', !!pitchDeckUrl);
+      console.log('- Full analysis object:', JSON.stringify(analysis, null, 2));
+
       if (analysis?.readiness_assessment && pitchDeckUrl) {
         console.log('Storing readiness assessment...');
-        const { error: assessmentError } = await supabase
+
+        const assessmentData = {
+          startup_id: user.id,
+          pitch_deck_path: pitchDeckUrl,
+          overall_score: analysis.readiness_assessment.overall_score || null,
+          formation: analysis.readiness_assessment.formation || null,
+          business_plan: analysis.readiness_assessment.business_plan || null,
+          pitch: analysis.readiness_assessment.pitch || null,
+          product: analysis.readiness_assessment.product || null,
+          technology: analysis.readiness_assessment.technology || null,
+          go_to_market: analysis.readiness_assessment.go_to_market || null,
+        };
+
+        console.log('Assessment data to insert:', JSON.stringify(assessmentData, null, 2));
+
+        const { data: insertedData, error: assessmentError } = await supabase
           .from('readiness_assessments')
-          .upsert({
-            startup_id: user.id,
-            pitch_deck_path: pitchDeckUrl,
-            overall_score: analysis.readiness_assessment.overall_score || null,
-            formation: analysis.readiness_assessment.formation || null,
-            business_plan: analysis.readiness_assessment.business_plan || null,
-            pitch: analysis.readiness_assessment.pitch || null,
-            product: analysis.readiness_assessment.product || null,
-            technology: analysis.readiness_assessment.technology || null,
-            go_to_market: analysis.readiness_assessment.go_to_market || null,
-          }, {
+          .upsert(assessmentData, {
             onConflict: 'startup_id,pitch_deck_path'
-          });
+          })
+          .select();
 
         if (assessmentError) {
           console.error('Readiness assessment error:', assessmentError);
+          console.error('Error code:', assessmentError.code);
+          console.error('Error message:', assessmentError.message);
+          console.error('Error details:', assessmentError.details);
+          console.error('Error hint:', assessmentError.hint);
           // Don't throw - this is not critical, continue with onboarding
         } else {
           console.log('Readiness assessment stored successfully!');
+          console.log('Inserted data:', insertedData);
         }
+      } else {
+        console.log('Skipping readiness assessment storage - conditions not met');
+        if (!analysis) console.log('  - No analysis object');
+        if (!analysis?.readiness_assessment) console.log('  - No readiness_assessment in analysis');
+        if (!pitchDeckUrl) console.log('  - No pitchDeckUrl');
       }
 
       // Load the created profile to populate review form
