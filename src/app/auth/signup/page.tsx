@@ -75,6 +75,18 @@ function SignUpForm() {
       if (error) throw error;
 
       if (data.user) {
+        // Create profile row immediately (fallback in case trigger doesn't exist)
+        // This ensures compatibility whether or not the database trigger is installed
+        await supabase
+          .from('profiles')
+          .upsert({
+            id: data.user.id,
+            email: data.user.email!,
+            role: role,
+          }, {
+            onConflict: 'id'
+          });
+
         // Redirect to onboarding
         router.push(`/onboarding/${role}`);
       }

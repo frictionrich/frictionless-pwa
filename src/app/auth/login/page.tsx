@@ -52,11 +52,24 @@ export default function LoginPage() {
 
       if (data.user) {
         // Get user profile to determine role
-        const { data: profile } = await supabase
+        let { data: profile } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', data.user.id)
           .single();
+
+        // If no profile exists, create one (fallback for users created before trigger)
+        if (!profile) {
+          const userRole = data.user.user_metadata?.role || 'startup';
+          await supabase
+            .from('profiles')
+            .insert({
+              id: data.user.id,
+              email: data.user.email!,
+              role: userRole,
+            });
+          profile = { role: userRole };
+        }
 
         const role = (profile as any)?.role || 'startup';
         router.push(`/dashboard/${role}`);
