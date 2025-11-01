@@ -162,25 +162,33 @@ export async function POST(request: NextRequest) {
     const promptWithContent = PITCH_DECK_ANALYZER_PROMPT.replace('{{PITCH_DECK_TEXT}}', content);
 
     // Analyze with OpenAI
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: promptWithContent,
-        },
-      ],
-      temperature: 0.3,
-      max_tokens: 2000,
-      response_format: { type: 'json_object' },
-    });
+    console.log('📤 Calling OpenAI API to analyze pitch deck...');
+    try {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: promptWithContent,
+          },
+        ],
+        temperature: 0.3,
+        max_tokens: 2000,
+        response_format: { type: 'json_object' },
+      });
 
-    const analysis = JSON.parse(response.choices[0].message.content || '{}');
+      console.log('✅ OpenAI API call succeeded');
+      const analysis = JSON.parse(response.choices[0].message.content || '{}');
 
-    return NextResponse.json({
-      success: true,
-      analysis,
-    });
+      return NextResponse.json({
+        success: true,
+        analysis,
+      });
+    } catch (openaiError: any) {
+      console.error('❌ OpenAI API call failed:', openaiError.message);
+      console.error('OpenAI error details:', openaiError);
+      throw openaiError;
+    }
   } catch (error: any) {
     console.error('Error analyzing pitch deck:', error);
     console.error('Error stack:', error.stack);

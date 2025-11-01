@@ -24,6 +24,7 @@ export default function StartupOnboardingPage() {
 
   // Review data state (populated after AI analysis)
   const [reviewData, setReviewData] = useState<any>(null);
+  const [aiExtractionSucceeded, setAiExtractionSucceeded] = useState(true);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -93,11 +94,14 @@ export default function StartupOnboardingPage() {
             if (analysisResponse.ok) {
               const result = await analysisResponse.json();
               analysis = result.analysis;
+              setAiExtractionSucceeded(true);
             } else {
               console.error('AI analysis failed with status:', analysisResponse.status);
+              setAiExtractionSucceeded(false);
             }
           } catch (analysisError) {
             console.error('AI analysis failed:', analysisError);
+            setAiExtractionSucceeded(false);
             // Continue without analysis - not critical
           }
         }
@@ -358,7 +362,9 @@ export default function StartupOnboardingPage() {
                 Review Your Information
               </h1>
               <p className="text-body-2 text-neutral-grey mb-8">
-                Our AI extracted the following information from your pitch deck. Please review and make any corrections before we start the matching process.
+                {aiExtractionSucceeded
+                  ? 'Our AI extracted the following information from your pitch deck. Please review and make any corrections before we start the matching process.'
+                  : 'Our AI was not able to extract the necessary information from the deck. Please try again or fill in as many fields below as possible for the best possible matches.'}
               </p>
 
               {error && (
