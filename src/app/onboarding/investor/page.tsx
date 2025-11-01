@@ -393,6 +393,50 @@ export default function InvestorOnboardingPage() {
                   />
                 </div>
 
+                <div>
+                  <label className="block text-body-3-medium text-neutral-black mb-2">
+                    Investor Deck (PDF, Optional)
+                  </label>
+                  <div className="border-2 border-dashed border-neutral-grey-blue rounded-lg p-8 text-center hover:border-primary transition-colors">
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      id="investor-deck"
+                    />
+                    <label htmlFor="investor-deck" className="cursor-pointer">
+                      {formData.investorDeckFile ? (
+                        <div>
+                          <p className="text-body-2 text-neutral-black mb-2">
+                            {formData.investorDeckFile.name}
+                          </p>
+                          <p className="text-body-3 text-primary">
+                            Click to change file
+                          </p>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="mb-4">
+                            <svg className="w-12 h-12 mx-auto text-neutral-grey" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                          </div>
+                          <p className="text-body-2 text-neutral-black mb-2">
+                            Click to upload
+                          </p>
+                          <p className="text-body-3 text-neutral-grey">
+                            PDF (max 4.5MB)
+                          </p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                  {error && (
+                    <p className="mt-2 text-body-3 text-error">{error}</p>
+                  )}
+                </div>
+
                 <div className="flex justify-between gap-4 mt-8">
                   <Button
                     variant="secondary"

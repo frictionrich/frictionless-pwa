@@ -337,12 +337,12 @@ export default function StartupOnboardingPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-body-3-medium text-neutral-black mb-2">
-                    Pitch Deck (PDF, PPT, or PPTX)
+                    Pitch Deck (PDF)
                   </label>
                   <div className="border-2 border-dashed border-neutral-grey-blue rounded-lg p-8 text-center hover:border-primary transition-colors">
                     <input
                       type="file"
-                      accept=".pdf,.ppt,.pptx"
+                      accept=".pdf"
                       onChange={handleFileChange}
                       className="hidden"
                       id="pitch-deck"
@@ -365,10 +365,10 @@ export default function StartupOnboardingPage() {
                             </svg>
                           </div>
                           <p className="text-body-2 text-neutral-black mb-2">
-                            Drag and drop or click to upload
+                            Click to upload
                           </p>
                           <p className="text-body-3 text-neutral-grey">
-                            PDF, PPT, or PPTX (max 4.5MB)
+                            PDF (max 4.5MB)
                           </p>
                         </div>
                       )}
