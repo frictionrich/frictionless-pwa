@@ -114,31 +114,37 @@ export default function ReadinessPage() {
       name: 'Formation',
       score: assessment.formation,
       description: 'Legal structure, IP, compliance',
+      weight: '10%',
     },
     {
       name: 'Business Plan',
       score: assessment.business_plan,
       description: 'Revenue maturity, unit costs, business model, expansion strategy, distribution',
+      weight: '20%',
     },
     {
       name: 'Pitch',
       score: assessment.pitch,
       description: 'Clarity of problem, solution, competition, ask, market, strategy',
+      weight: '15%',
     },
     {
-      name: 'Product Readiness',
-      score: assessment.product_readiness,
-      description: 'Product maturity, features, user feedback',
+      name: 'Product',
+      score: assessment.product,
+      description: 'Product maturity, features, user feedback, MVP status',
+      weight: '15%',
     },
     {
-      name: 'Technology Maturity',
-      score: assessment.technology_maturity,
-      description: 'Scalability, architecture, technical debt',
+      name: 'Technology',
+      score: assessment.technology,
+      description: 'Scalability, architecture, technical debt, tech stack',
+      weight: '15%',
     },
     {
-      name: 'Go-to-Market Readiness',
-      score: assessment.go_to_market_readiness,
-      description: 'GTM strategy, customer acquisition, distribution',
+      name: 'Go-to-Market',
+      score: assessment.go_to_market,
+      description: 'GTM strategy, customer acquisition, distribution, sales channels',
+      weight: '25%',
     },
   ];
 
@@ -190,9 +196,14 @@ export default function ReadinessPage() {
                 <CardContent>
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex-1">
-                      <h3 className="text-body-2-medium text-neutral-black mb-1">
-                        {dimension.name}
-                      </h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-body-2-medium text-neutral-black">
+                          {dimension.name}
+                        </h3>
+                        <span className="text-body-4 text-neutral-grey">
+                          ({dimension.weight})
+                        </span>
+                      </div>
                       <p className="text-body-4 text-neutral-grey">
                         {dimension.description}
                       </p>
