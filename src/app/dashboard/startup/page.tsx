@@ -158,6 +158,7 @@ export default function StartupDashboard() {
 
       // Analyze pitch deck with AI
       try {
+        console.log('📤 Initiating OpenAI API call to analyze pitch deck...');
         const formDataToSend = new FormData();
         formDataToSend.append('file', file);
 
@@ -169,6 +170,7 @@ export default function StartupDashboard() {
         if (analysisResponse.ok) {
           const result = await analysisResponse.json();
           const analysis = result.analysis;
+          console.log('✅ OpenAI API call succeeded - analysis received');
 
           // Update startup profile with AI analysis
           await supabase
@@ -229,7 +231,7 @@ export default function StartupDashboard() {
           }
         }
       } catch (analysisError) {
-        console.error('AI analysis failed:', analysisError);
+        console.error('❌ OpenAI API call failed with error:', analysisError);
         // Continue without analysis - not critical
       }
 

@@ -110,6 +110,7 @@ export default function InvestorOnboardingPage() {
         // Analyze investor deck with AI if it's a PDF
         if (fileExt?.toLowerCase() === 'pdf') {
           try {
+            console.log('📤 Initiating OpenAI API call to analyze investor deck...');
             const formDataToSend = new FormData();
             formDataToSend.append('file', formData.investorDeckFile as File);
 
@@ -121,11 +122,12 @@ export default function InvestorOnboardingPage() {
             if (analysisResponse.ok) {
               const result = await analysisResponse.json();
               analysis = result.analysis;
+              console.log('✅ OpenAI API call succeeded - analysis received');
             } else {
-              console.error('AI analysis failed with status:', analysisResponse.status);
+              console.error('❌ OpenAI API call failed with status:', analysisResponse.status);
             }
           } catch (analysisError) {
-            console.error('AI analysis failed:', analysisError);
+            console.error('❌ OpenAI API call failed with error:', analysisError);
             // Continue without analysis - not critical
           }
         }

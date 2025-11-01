@@ -83,6 +83,7 @@ export default function StartupOnboardingPage() {
         // Analyze pitch deck with AI if it's a PDF
         if (fileExt?.toLowerCase() === 'pdf') {
           try {
+            console.log('📤 Initiating OpenAI API call to analyze pitch deck...');
             const formDataToSend = new FormData();
             formDataToSend.append('file', formData.pitchDeckFile as File);
 
@@ -94,13 +95,14 @@ export default function StartupOnboardingPage() {
             if (analysisResponse.ok) {
               const result = await analysisResponse.json();
               analysis = result.analysis;
+              console.log('✅ OpenAI API call succeeded - analysis received');
               setAiExtractionSucceeded(true);
             } else {
-              console.error('AI analysis failed with status:', analysisResponse.status);
+              console.error('❌ OpenAI API call failed with status:', analysisResponse.status);
               setAiExtractionSucceeded(false);
             }
           } catch (analysisError) {
-            console.error('AI analysis failed:', analysisError);
+            console.error('❌ OpenAI API call failed with error:', analysisError);
             setAiExtractionSucceeded(false);
             // Continue without analysis - not critical
           }

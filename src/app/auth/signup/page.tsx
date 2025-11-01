@@ -72,7 +72,10 @@ function SignUpForm() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Signup error:', error);
+        throw error;
+      }
 
       if (data.user) {
         // Create profile row immediately (fallback in case trigger doesn't exist)
@@ -91,7 +94,15 @@ function SignUpForm() {
         router.push(`/onboarding/${role}`);
       }
     } catch (err: any) {
-      setError(err.message);
+      console.error('Signup error details:', err);
+      // Provide user-friendly error messages
+      if (err.message?.includes('already registered') || err.message?.includes('already been registered')) {
+        setError('This email is already registered. Please log in instead.');
+      } else if (err.status === 422) {
+        setError('Unable to create account. This email may already be registered or there may be a configuration issue. Please try logging in or contact support.');
+      } else {
+        setError(err.message || 'Failed to create account. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
