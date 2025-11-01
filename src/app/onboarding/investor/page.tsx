@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 
 export default function InvestorOnboardingPage() {
   const router = useRouter();
@@ -23,11 +24,23 @@ export default function InvestorOnboardingPage() {
     ticketSizeMax: '',
   });
 
+  // Review data state (populated after AI analysis)
+  const [reviewData, setReviewData] = useState<any>(null);
+
   const sectors = ['SaaS', 'FinTech', 'HealthTech', 'EdTech', 'E-commerce', 'AI/ML', 'Blockchain', 'Climate Tech'];
   const stages = ['Pre-seed', 'Seed', 'Series A', 'Series B', 'Series C+'];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleReviewChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setReviewData({ ...reviewData, [e.target.name]: e.target.value });
+  };
+
+  const handleArrayChange = (field: string, value: string) => {
+    const items = value.split(',').map(item => item.trim()).filter(item => item);
+    setReviewData({ ...reviewData, [field]: items });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,7 +76,8 @@ export default function InvestorOnboardingPage() {
     });
   };
 
-  const handleSubmit = async () => {
+  // Handle step 2 -> 3: Upload and analyze investor deck
+  const handleUploadAndAnalyze = async () => {
     setLoading(true);
     setError('');
 
@@ -71,8 +85,6 @@ export default function InvestorOnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Profile is automatically created by database trigger on signup
-      // Upload investor deck and analyze if provided
       let investorDeckUrl = null;
       let analysis = null;
 
@@ -102,14 +114,13 @@ export default function InvestorOnboardingPage() {
           try {
             console.log('Starting AI analysis...');
 
-            // Send PDF file as multipart/form-data
             const formDataToSend = new FormData();
             formDataToSend.append('file', formData.investorDeckFile as File);
 
             console.log('Calling API with PDF file...');
             const analysisResponse = await fetch('/api/analyze-investor-deck', {
               method: 'POST',
-              body: formDataToSend, // Send as FormData, not JSON
+              body: formDataToSend,
             });
 
             console.log('API response status:', analysisResponse.status);
@@ -172,11 +183,79 @@ export default function InvestorOnboardingPage() {
       }
 
       console.log('Investor profile created successfully!');
-      console.log('Redirecting to review page...');
 
-      // Redirect to review page to confirm AI-extracted data
-      router.push('/onboarding/investor/review');
+      // Load the created profile to populate review form
+      const { data: profile, error: profileError } = await supabase
+        .from('investor_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error loading profile:', profileError);
+        throw profileError;
+      }
+
+      // Initialize review data with extracted data
+      setReviewData({
+        organization_name: profile.organization_name || '',
+        investor_name: profile.investor_name || '',
+        headquarters: profile.headquarters || '',
+        fund_size: profile.fund_size || '',
+        average_ticket: profile.average_ticket || '',
+        investment_thesis: profile.investment_thesis || '',
+        value_add: profile.value_add || '',
+        decision_process: profile.decision_process || '',
+        timeline: profile.timeline || '',
+        focus_sectors: profile.focus_sectors || [],
+        focus_stages: profile.focus_stages || [],
+        geography_focus: profile.geography_focus || [],
+      });
+
+      // Move to step 3 (review)
+      setStep(3);
     } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle final submit: Save reviewed data and go to dashboard
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // Update the profile with user-confirmed data
+      const { error: updateError } = await supabase
+        .from('investor_profiles')
+        .update({
+          organization_name: reviewData.organization_name,
+          investor_name: reviewData.investor_name,
+          headquarters: reviewData.headquarters,
+          fund_size: reviewData.fund_size,
+          average_ticket: reviewData.average_ticket,
+          investment_thesis: reviewData.investment_thesis,
+          value_add: reviewData.value_add,
+          decision_process: reviewData.decision_process,
+          timeline: reviewData.timeline,
+          focus_sectors: reviewData.focus_sectors,
+          focus_stages: reviewData.focus_stages,
+          geography_focus: reviewData.geography_focus,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user.id);
+
+      if (updateError) throw updateError;
+
+      // Redirect to dashboard
+      router.push('/dashboard/investor');
+    } catch (err: any) {
+      console.error('Error saving:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -339,7 +418,8 @@ export default function InvestorOnboardingPage() {
                   <Button
                     variant="primary"
                     size="normal"
-                    onClick={() => setStep(3)}
+                    onClick={handleUploadAndAnalyze}
+                    loading={loading}
                   >
                     Continue
                   </Button>
@@ -348,58 +428,171 @@ export default function InvestorOnboardingPage() {
             </>
           )}
 
-          {step === 3 && (
-            <>
+          {step === 3 && reviewData && (
+            <div className="max-w-5xl mx-auto">
               <h1 className="text-h2 font-semibold mb-2">
-                Upload your investor deck (Optional)
+                Review Your Information
               </h1>
               <p className="text-body-2 text-neutral-grey mb-8">
-                Share more about your fund, portfolio, and investment approach.
+                Our AI extracted the following information from your investor deck. Please review and make any corrections before we start the matching process.
               </p>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-body-3-medium text-neutral-black mb-2">
-                    Investor Deck (PDF, PPT, or PPTX)
-                  </label>
-                  <div className="border-2 border-dashed border-neutral-grey-blue rounded-lg p-8 text-center hover:border-primary transition-colors">
-                    <input
-                      type="file"
-                      accept=".pdf,.ppt,.pptx"
-                      onChange={handleFileChange}
-                      className="hidden"
-                      id="investor-deck"
-                    />
-                    <label htmlFor="investor-deck" className="cursor-pointer">
-                      {formData.investorDeckFile ? (
-                        <div>
-                          <p className="text-body-2 text-neutral-black mb-2">
-                            {formData.investorDeckFile.name}
-                          </p>
-                          <p className="text-body-3 text-primary">
-                            Click to change file
-                          </p>
-                        </div>
-                      ) : (
-                        <div>
-                          <div className="mb-4">
-                            <svg className="w-12 h-12 mx-auto text-neutral-grey" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                            </svg>
-                          </div>
-                          <p className="text-body-2 text-neutral-black mb-2">
-                            Drag and drop or click to upload
-                          </p>
-                          <p className="text-body-3 text-neutral-grey">
-                            PDF, PPT, or PPTX (max 4.5MB)
-                          </p>
-                        </div>
-                      )}
-                    </label>
-                  </div>
+              {error && (
+                <div className="mb-4 p-4 bg-error/10 border border-error rounded-md text-error text-body-3">
+                  {error}
                 </div>
+              )}
 
-                <div className="flex justify-between gap-4 mt-8">
+              <div className="space-y-6">
+                {/* Organization Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Organization Information</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Input
+                        label="Organization/Fund Name"
+                        name="organization_name"
+                        value={reviewData.organization_name}
+                        onChange={handleReviewChange}
+                        required
+                      />
+                      <Input
+                        label="Investor Name (Individual)"
+                        name="investor_name"
+                        value={reviewData.investor_name}
+                        onChange={handleReviewChange}
+                        helperText="If applicable"
+                      />
+                      <Input
+                        label="Headquarters"
+                        name="headquarters"
+                        value={reviewData.headquarters}
+                        onChange={handleReviewChange}
+                        helperText="City, State/Country"
+                      />
+                      <Input
+                        label="Fund Size"
+                        name="fund_size"
+                        value={reviewData.fund_size}
+                        onChange={handleReviewChange}
+                        helperText="e.g., $50M or Angel Investor"
+                      />
+                      <Input
+                        label="Average Ticket Size"
+                        name="average_ticket"
+                        value={reviewData.average_ticket}
+                        onChange={handleReviewChange}
+                        helperText="e.g., $25K-$150K"
+                      />
+                      <Input
+                        label="Decision Timeline"
+                        name="timeline"
+                        value={reviewData.timeline}
+                        onChange={handleReviewChange}
+                        helperText="e.g., 4-8 weeks"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Investment Focus */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Investment Focus</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-body-3-medium text-neutral-black mb-2">
+                          Focus Sectors
+                        </label>
+                        <Input
+                          name="focus_sectors"
+                          value={reviewData.focus_sectors.join(', ')}
+                          onChange={(e) => handleArrayChange('focus_sectors', e.target.value)}
+                          helperText="Comma-separated (e.g., SaaS, AI/ML, FinTech)"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-body-3-medium text-neutral-black mb-2">
+                          Focus Stages
+                        </label>
+                        <Input
+                          name="focus_stages"
+                          value={reviewData.focus_stages.join(', ')}
+                          onChange={(e) => handleArrayChange('focus_stages', e.target.value)}
+                          helperText="Comma-separated (e.g., Pre-seed, Seed, Series A)"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-body-3-medium text-neutral-black mb-2">
+                          Geographic Focus
+                        </label>
+                        <Input
+                          name="geography_focus"
+                          value={reviewData.geography_focus.join(', ')}
+                          onChange={(e) => handleArrayChange('geography_focus', e.target.value)}
+                          helperText="Comma-separated (e.g., Texas, LATAM, US)"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Investment Philosophy */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Investment Philosophy & Process</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-body-3-medium text-neutral-black mb-2">
+                          Investment Thesis
+                        </label>
+                        <textarea
+                          name="investment_thesis"
+                          className="w-full px-4 py-3 rounded-lg border border-neutral-grey-blue focus:border-primary focus:outline-none text-body-3 resize-none"
+                          rows={4}
+                          value={reviewData.investment_thesis}
+                          onChange={handleReviewChange}
+                          placeholder="Your investment philosophy and approach..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-body-3-medium text-neutral-black mb-2">
+                          Value Add
+                        </label>
+                        <textarea
+                          name="value_add"
+                          className="w-full px-4 py-3 rounded-lg border border-neutral-grey-blue focus:border-primary focus:outline-none text-body-3 resize-none"
+                          rows={3}
+                          value={reviewData.value_add}
+                          onChange={handleReviewChange}
+                          placeholder="How you help portfolio companies beyond capital..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-body-3-medium text-neutral-black mb-2">
+                          Decision Process
+                        </label>
+                        <textarea
+                          name="decision_process"
+                          className="w-full px-4 py-3 rounded-lg border border-neutral-grey-blue focus:border-primary focus:outline-none text-body-3 resize-none"
+                          rows={3}
+                          value={reviewData.decision_process}
+                          onChange={handleReviewChange}
+                          placeholder="How you make investment decisions..."
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Action Buttons */}
+                <div className="flex justify-between gap-4">
                   <Button
                     variant="secondary"
                     size="normal"
@@ -407,28 +600,17 @@ export default function InvestorOnboardingPage() {
                   >
                     Back
                   </Button>
-                  <div className="flex gap-3">
-                    <Button
-                      variant="tertiary"
-                      size="normal"
-                      onClick={handleSubmit}
-                      loading={loading}
-                      disabled={loading}
-                    >
-                      Skip
-                    </Button>
-                    <Button
-                      variant="primary"
-                      size="normal"
-                      onClick={handleSubmit}
-                      loading={loading}
-                    >
-                      Complete Setup
-                    </Button>
-                  </div>
+                  <Button
+                    variant="primary"
+                    size="normal"
+                    onClick={handleSubmit}
+                    loading={loading}
+                  >
+                    Confirm & Start Matching
+                  </Button>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </div>
       </div>

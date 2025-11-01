@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { supabase } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 
 export default function StartupOnboardingPage() {
   const router = useRouter();
@@ -21,8 +22,15 @@ export default function StartupOnboardingPage() {
     pitchDeckFile: null as File | null,
   });
 
+  // Review data state (populated after AI analysis)
+  const [reviewData, setReviewData] = useState<any>(null);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleReviewChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setReviewData({ ...reviewData, [e.target.name]: e.target.value });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,18 +48,15 @@ export default function StartupOnboardingPage() {
     }
   };
 
-  const handleSubmit = async () => {
-    console.log('handleSubmit called');
+  // Handle step 2 -> 3: Upload and analyze pitch deck
+  const handleUploadAndAnalyze = async () => {
     setLoading(true);
     setError('');
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      console.log('User:', user);
       if (!user) throw new Error('Not authenticated');
 
-      // Profile is automatically created by database trigger on signup
-      // Upload pitch deck and analyze if provided
       let pitchDeckUrl = null;
       let analysis = null;
 
@@ -81,14 +86,13 @@ export default function StartupOnboardingPage() {
           try {
             console.log('Starting AI analysis...');
 
-            // Send PDF file as multipart/form-data
             const formDataToSend = new FormData();
             formDataToSend.append('file', formData.pitchDeckFile as File);
 
             console.log('Calling API with PDF file...');
             const analysisResponse = await fetch('/api/analyze-pitch-deck', {
               method: 'POST',
-              body: formDataToSend, // Send as FormData, not JSON
+              body: formDataToSend,
             });
 
             console.log('API response status:', analysisResponse.status);
@@ -131,12 +135,96 @@ export default function StartupOnboardingPage() {
       }
 
       console.log('Startup profile created successfully!');
-      console.log('Redirecting to review page...');
 
-      // Redirect to review page to confirm AI-extracted data
-      router.push('/onboarding/startup/review');
+      // Load the created profile to populate review form
+      const { data: profile, error: profileError } = await supabase
+        .from('startup_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Error loading profile:', profileError);
+        throw profileError;
+      }
+
+      // Initialize review data with extracted data
+      setReviewData({
+        company_name: profile.company_name || '',
+        industry: profile.industry || '',
+        stage: profile.stage || '',
+        headquarters: profile.headquarters || '',
+        funding_ask: profile.funding_ask || '',
+        business_model: profile.business_model || '',
+        value_proposition: profile.value_proposition || '',
+        target_market: profile.target_market || '',
+        team_size: profile.team_size || '',
+        mrr: profile.mrr || '',
+        revenue: profile.revenue || '',
+        burn_rate: profile.burn_rate || '',
+        runway_months: profile.runway_months || '',
+        total_raised: profile.total_raised || '',
+        valuation: profile.valuation || '',
+        traction: profile.traction || '',
+        product_status: profile.product_status || '',
+        use_of_funds: profile.use_of_funds || '',
+        market_size: profile.market_size || '',
+        market_growth: profile.market_growth || '',
+      });
+
+      // Move to step 3 (review)
+      setStep(3);
     } catch (err: any) {
-      console.error('Error in handleSubmit:', err);
+      console.error('Error in handleUploadAndAnalyze:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle final submit: Save reviewed data and go to dashboard
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // Update the profile with user-confirmed data
+      const { error: updateError } = await supabase
+        .from('startup_profiles')
+        .update({
+          company_name: reviewData.company_name,
+          industry: reviewData.industry,
+          stage: reviewData.stage,
+          headquarters: reviewData.headquarters,
+          funding_ask: reviewData.funding_ask,
+          business_model: reviewData.business_model,
+          value_proposition: reviewData.value_proposition,
+          target_market: reviewData.target_market,
+          team_size: reviewData.team_size ? parseInt(reviewData.team_size) : null,
+          mrr: reviewData.mrr ? parseInt(reviewData.mrr) : null,
+          revenue: reviewData.revenue ? parseInt(reviewData.revenue) : null,
+          burn_rate: reviewData.burn_rate ? parseInt(reviewData.burn_rate) : null,
+          runway_months: reviewData.runway_months ? parseInt(reviewData.runway_months) : null,
+          total_raised: reviewData.total_raised ? parseInt(reviewData.total_raised) : null,
+          valuation: reviewData.valuation ? parseInt(reviewData.valuation) : null,
+          traction: reviewData.traction,
+          product_status: reviewData.product_status,
+          use_of_funds: reviewData.use_of_funds,
+          market_size: reviewData.market_size,
+          market_growth: reviewData.market_growth,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user.id);
+
+      if (updateError) throw updateError;
+
+      // Redirect to dashboard
+      router.push('/dashboard/startup');
+    } catch (err: any) {
+      console.error('Error saving:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -154,13 +242,13 @@ export default function StartupOnboardingPage() {
         {/* Progress indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-body-3 text-neutral-grey">Step {step} of 2</span>
-            <span className="text-body-3 text-neutral-grey">{Math.round((step / 2) * 100)}%</span>
+            <span className="text-body-3 text-neutral-grey">Step {step} of 3</span>
+            <span className="text-body-3 text-neutral-grey">{Math.round((step / 3) * 100)}%</span>
           </div>
           <div className="h-2 bg-neutral-silver rounded-full overflow-hidden">
             <div
               className="h-full bg-primary transition-all duration-300"
-              style={{ width: `${(step / 2) * 100}%` }}
+              style={{ width: `${(step / 3) * 100}%` }}
             />
           </div>
         </div>
@@ -198,24 +286,6 @@ export default function StartupOnboardingPage() {
                   type="url"
                   placeholder="https://yourcompany.com"
                   value={formData.website}
-                  onChange={handleChange}
-                />
-
-                <Input
-                  label="LinkedIn (Optional)"
-                  name="linkedin"
-                  type="url"
-                  placeholder="https://linkedin.com/company/yourcompany"
-                  value={formData.linkedin}
-                  onChange={handleChange}
-                />
-
-                <Input
-                  label="Twitter (Optional)"
-                  name="twitter"
-                  type="url"
-                  placeholder="https://twitter.com/yourcompany"
-                  value={formData.twitter}
                   onChange={handleChange}
                 />
 
@@ -301,14 +371,271 @@ export default function StartupOnboardingPage() {
                   <Button
                     variant="primary"
                     size="normal"
-                    onClick={handleSubmit}
+                    onClick={handleUploadAndAnalyze}
                     loading={loading}
                   >
-                    Complete Setup
+                    Continue
                   </Button>
                 </div>
               </div>
             </>
+          )}
+
+          {step === 3 && reviewData && (
+            <div className="max-w-5xl mx-auto">
+              <h1 className="text-h2 font-semibold mb-2">
+                Review Your Information
+              </h1>
+              <p className="text-body-2 text-neutral-grey mb-8">
+                Our AI extracted the following information from your pitch deck. Please review and make any corrections before we start the matching process.
+              </p>
+
+              {error && (
+                <div className="mb-4 p-4 bg-error/10 border border-error rounded-md text-error text-body-3">
+                  {error}
+                </div>
+              )}
+
+              <div className="space-y-6">
+                {/* Company Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Company Information</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Input
+                        label="Company Name"
+                        name="company_name"
+                        value={reviewData.company_name}
+                        onChange={handleReviewChange}
+                        required
+                      />
+                      <Input
+                        label="Industry/Sector"
+                        name="industry"
+                        value={reviewData.industry}
+                        onChange={handleReviewChange}
+                        helperText="e.g., FinTech/AI & Big Data"
+                      />
+                      <Input
+                        label="Stage"
+                        name="stage"
+                        value={reviewData.stage}
+                        onChange={handleReviewChange}
+                        helperText="e.g., Pre-seed, Seed, Series A"
+                      />
+                      <Input
+                        label="Headquarters"
+                        name="headquarters"
+                        value={reviewData.headquarters}
+                        onChange={handleReviewChange}
+                        helperText="City, State/Country"
+                      />
+                      <Input
+                        label="Funding Ask"
+                        name="funding_ask"
+                        value={reviewData.funding_ask}
+                        onChange={handleReviewChange}
+                        helperText="e.g., $1M SAFE"
+                      />
+                      <Input
+                        label="Product Status"
+                        name="product_status"
+                        value={reviewData.product_status}
+                        onChange={handleReviewChange}
+                        helperText="e.g., MVP, Live, Scaling"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Business Model */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Business Model & Value</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-body-3-medium text-neutral-black mb-2">
+                          Business Model
+                        </label>
+                        <textarea
+                          name="business_model"
+                          className="w-full px-4 py-3 rounded-lg border border-neutral-grey-blue focus:border-primary focus:outline-none text-body-3 resize-none"
+                          rows={3}
+                          value={reviewData.business_model}
+                          onChange={handleReviewChange}
+                          placeholder="How does your company make money?"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-body-3-medium text-neutral-black mb-2">
+                          Value Proposition
+                        </label>
+                        <textarea
+                          name="value_proposition"
+                          className="w-full px-4 py-3 rounded-lg border border-neutral-grey-blue focus:border-primary focus:outline-none text-body-3 resize-none"
+                          rows={3}
+                          value={reviewData.value_proposition}
+                          onChange={handleReviewChange}
+                          placeholder="What unique value do you offer?"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-body-3-medium text-neutral-black mb-2">
+                          Target Market
+                        </label>
+                        <textarea
+                          name="target_market"
+                          className="w-full px-4 py-3 rounded-lg border border-neutral-grey-blue focus:border-primary focus:outline-none text-body-3 resize-none"
+                          rows={3}
+                          value={reviewData.target_market}
+                          onChange={handleReviewChange}
+                          placeholder="Who are your target customers?"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Financial Metrics */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Financial Metrics</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Input
+                        label="MRR (Monthly Recurring Revenue)"
+                        name="mrr"
+                        type="number"
+                        value={reviewData.mrr}
+                        onChange={handleReviewChange}
+                        helperText="In dollars"
+                      />
+                      <Input
+                        label="Annual Revenue"
+                        name="revenue"
+                        type="number"
+                        value={reviewData.revenue}
+                        onChange={handleReviewChange}
+                        helperText="In dollars"
+                      />
+                      <Input
+                        label="Monthly Burn Rate"
+                        name="burn_rate"
+                        type="number"
+                        value={reviewData.burn_rate}
+                        onChange={handleReviewChange}
+                        helperText="In dollars"
+                      />
+                      <Input
+                        label="Runway (months)"
+                        name="runway_months"
+                        type="number"
+                        value={reviewData.runway_months}
+                        onChange={handleReviewChange}
+                      />
+                      <Input
+                        label="Total Raised to Date"
+                        name="total_raised"
+                        type="number"
+                        value={reviewData.total_raised}
+                        onChange={handleReviewChange}
+                        helperText="In dollars"
+                      />
+                      <Input
+                        label="Current Valuation"
+                        name="valuation"
+                        type="number"
+                        value={reviewData.valuation}
+                        onChange={handleReviewChange}
+                        helperText="In dollars"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Market & Traction */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Market & Traction</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <Input
+                        label="Team Size"
+                        name="team_size"
+                        type="number"
+                        value={reviewData.team_size}
+                        onChange={handleReviewChange}
+                      />
+                      <Input
+                        label="Market Size"
+                        name="market_size"
+                        value={reviewData.market_size}
+                        onChange={handleReviewChange}
+                        helperText="e.g., $2.3B (2024)"
+                      />
+                      <Input
+                        label="Market Growth"
+                        name="market_growth"
+                        value={reviewData.market_growth}
+                        onChange={handleReviewChange}
+                        helperText="e.g., growing 15% CAGR"
+                      />
+                      <div>
+                        <label className="block text-body-3-medium text-neutral-black mb-2">
+                          Traction
+                        </label>
+                        <textarea
+                          name="traction"
+                          className="w-full px-4 py-3 rounded-lg border border-neutral-grey-blue focus:border-primary focus:outline-none text-body-3 resize-none"
+                          rows={3}
+                          value={reviewData.traction}
+                          onChange={handleReviewChange}
+                          placeholder="Key metrics, user numbers, growth rates, partnerships"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-body-3-medium text-neutral-black mb-2">
+                          Use of Funds
+                        </label>
+                        <textarea
+                          name="use_of_funds"
+                          className="w-full px-4 py-3 rounded-lg border border-neutral-grey-blue focus:border-primary focus:outline-none text-body-3 resize-none"
+                          rows={3}
+                          value={reviewData.use_of_funds}
+                          onChange={handleReviewChange}
+                          placeholder="How will you use the funding?"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Action Buttons */}
+                <div className="flex justify-between gap-4">
+                  <Button
+                    variant="secondary"
+                    size="normal"
+                    onClick={() => setStep(2)}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="normal"
+                    onClick={handleSubmit}
+                    loading={loading}
+                  >
+                    Confirm & Start Matching
+                  </Button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>
