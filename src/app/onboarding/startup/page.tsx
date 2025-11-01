@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 
 export default function StartupOnboardingPage() {
   const router = useRouter();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(1); // Now step 1 = upload deck, step 2 = review
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -165,6 +165,7 @@ export default function StartupOnboardingPage() {
       // Initialize review data with extracted data
       setReviewData({
         company_name: profile.company_name || '',
+        website: profile.website || '',
         industry: profile.industry || '',
         stage: profile.stage || '',
         headquarters: profile.headquarters || '',
@@ -186,8 +187,8 @@ export default function StartupOnboardingPage() {
         market_growth: profile.market_growth || '',
       });
 
-      // Move to step 3 (review)
-      setStep(3);
+      // Move to step 2 (review)
+      setStep(2);
     } catch (err: any) {
       console.error('Error in handleUploadAndAnalyze:', err);
       setError(err.message);
@@ -210,6 +211,7 @@ export default function StartupOnboardingPage() {
         .from('startup_profiles')
         .update({
           company_name: reviewData.company_name,
+          website: reviewData.website,
           industry: reviewData.industry,
           stage: reviewData.stage,
           headquarters: reviewData.headquarters,
@@ -268,68 +270,19 @@ export default function StartupOnboardingPage() {
         {/* Progress indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-body-3 text-neutral-grey">Step {step} of 3</span>
-            <span className="text-body-3 text-neutral-grey">{Math.round((step / 3) * 100)}%</span>
+            <span className="text-body-3 text-neutral-grey">Step {step} of 2</span>
+            <span className="text-body-3 text-neutral-grey">{Math.round((step / 2) * 100)}%</span>
           </div>
           <div className="h-2 bg-neutral-silver rounded-full overflow-hidden">
             <div
               className="h-full bg-primary transition-all duration-300"
-              style={{ width: `${(step / 3) * 100}%` }}
+              style={{ width: `${(step / 2) * 100}%` }}
             />
           </div>
         </div>
 
         <div className="card max-w-2xl mx-auto">
           {step === 1 && (
-            <>
-              <h1 className="text-h2 font-semibold mb-2">
-                Tell us about your company
-              </h1>
-              <p className="text-body-2 text-neutral-grey mb-8">
-                We'll use this information to create your profile and match you with the right investors.
-              </p>
-
-              {error && (
-                <div className="mb-4 p-4 bg-error/10 border border-error rounded-md text-error text-body-3">
-                  {error}
-                </div>
-              )}
-
-              <div className="space-y-4">
-                <Input
-                  label="Company Name"
-                  name="companyName"
-                  type="text"
-                  placeholder="Enter your company name"
-                  value={formData.companyName}
-                  onChange={handleChange}
-                  required
-                />
-
-                <Input
-                  label="Website"
-                  name="website"
-                  type="url"
-                  placeholder="https://yourcompany.com"
-                  value={formData.website}
-                  onChange={handleChange}
-                />
-
-                <div className="flex justify-end gap-4 mt-8">
-                  <Button
-                    variant="primary"
-                    size="normal"
-                    onClick={() => setStep(2)}
-                    disabled={!formData.companyName}
-                  >
-                    Continue
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-
-          {step === 2 && (
             <>
               <h1 className="text-h2 font-semibold mb-2">
                 Upload your pitch deck
@@ -386,14 +339,7 @@ export default function StartupOnboardingPage() {
                   </p>
                 </div>
 
-                <div className="flex justify-between gap-4 mt-8">
-                  <Button
-                    variant="secondary"
-                    size="normal"
-                    onClick={() => setStep(1)}
-                  >
-                    Back
-                  </Button>
+                <div className="flex justify-end gap-4 mt-8">
                   <Button
                     variant="primary"
                     size="normal"
@@ -407,7 +353,7 @@ export default function StartupOnboardingPage() {
             </>
           )}
 
-          {step === 3 && reviewData && (
+          {step === 2 && reviewData && (
             <div className="max-w-5xl mx-auto">
               <h1 className="text-h2 font-semibold mb-2">
                 Review Your Information
@@ -436,6 +382,14 @@ export default function StartupOnboardingPage() {
                         value={reviewData.company_name}
                         onChange={handleReviewChange}
                         required
+                      />
+                      <Input
+                        label="Website"
+                        name="website"
+                        type="url"
+                        value={reviewData.website}
+                        onChange={handleReviewChange}
+                        helperText="e.g., https://yourcompany.com"
                       />
                       <Input
                         label="Industry/Sector"

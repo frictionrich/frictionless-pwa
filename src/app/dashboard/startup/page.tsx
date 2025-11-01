@@ -446,33 +446,21 @@ export default function StartupDashboard() {
                 <div className="border-t border-neutral-silver pt-4">
                   <h4 className="text-body-2-medium mb-3">Next Steps</h4>
                   <div className="space-y-3">
-                    <label className="flex items-start gap-3 p-3 bg-tint-5 rounded-lg border border-tint-3 cursor-pointer hover:bg-tint-6 transition-colors">
+                    <button
+                      onClick={() => router.push('/onboarding/startup')}
+                      className="w-full flex items-start gap-3 p-3 bg-tint-5 rounded-lg border border-tint-3 cursor-pointer hover:bg-tint-6 transition-colors"
+                    >
                       <span className="text-xl">📄</span>
-                      <div className="flex-1">
-                        <p className="text-body-3-medium text-neutral-black">
-                          {uploading ? 'Uploading and analyzing...' : 'Upload New Deck'}
-                        </p>
+                      <div className="flex-1 text-left">
+                        <p className="text-body-3-medium text-neutral-black">Upload New Deck</p>
                         <p className="text-body-4 text-neutral-grey">Update your pitch deck to improve your profile.</p>
-                        {lastDeckUploadedAt && !uploading && (
+                        {lastDeckUploadedAt && (
                           <p className="text-body-4 text-neutral-grey mt-1">
                             Last deck uploaded {formatDistanceToNow(lastDeckUploadedAt, { addSuffix: true })}
                           </p>
                         )}
-                        {uploadError && (
-                          <p className="text-body-4 text-red-600 mt-1">{uploadError}</p>
-                        )}
-                        {uploading && (
-                          <p className="text-body-4 text-primary mt-1">Please wait, this may take a minute...</p>
-                        )}
                       </div>
-                      <input
-                        type="file"
-                        accept=".pdf"
-                        onChange={handleDeckUpload}
-                        disabled={uploading}
-                        className="hidden"
-                      />
-                    </label>
+                    </button>
                     {/* TODO: Implement these features later */}
                     {/* <div className="flex items-start gap-3 p-3 bg-neutral-silver rounded-lg">
                       <span className="text-xl">✨</span>
