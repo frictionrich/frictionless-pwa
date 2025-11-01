@@ -132,10 +132,12 @@ function SignUpForm() {
           </div>
 
           <h1 className="text-h2 font-semibold mb-2">
-            Build your startup, friction-free.
+            {role === 'investor' ? 'Discover. Invest. Grow.' : 'Build your startup, friction-free.'}
           </h1>
           <p className="text-body-2 text-neutral-grey mb-8">
-            Connect with investors and grow faster.
+            {role === 'investor'
+              ? 'Invest with clarity in curated opportunities.'
+              : 'Connect with investors and grow faster.'}
           </p>
 
           {error && (
