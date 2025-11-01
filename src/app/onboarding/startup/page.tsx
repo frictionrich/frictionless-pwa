@@ -361,11 +361,22 @@ export default function StartupOnboardingPage() {
               <h1 className="text-h2 font-semibold mb-2">
                 Review Your Information
               </h1>
-              <p className="text-body-2 text-neutral-grey mb-8">
-                {aiExtractionSucceeded
-                  ? 'Our AI extracted the following information from your pitch deck. Please review and make any corrections before we start the matching process.'
-                  : 'Our AI was not able to extract the necessary information from the deck. Please try again or fill in as many fields below as possible for the best possible matches.'}
-              </p>
+              <div className="flex items-start gap-3 mb-8">
+                {aiExtractionSucceeded ? (
+                  <svg className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                )}
+                <p className="text-body-2 text-neutral-grey">
+                  {aiExtractionSucceeded
+                    ? 'Our AI extracted the following information from your pitch deck. Please review and make any corrections before we start the matching process.'
+                    : 'Our AI was not able to extract the necessary information from the deck. Please try again or fill in as many fields below as possible for the best possible matches.'}
+                </p>
+              </div>
 
               {error && (
                 <div className="mb-4 p-4 bg-error/10 border border-error rounded-md text-error text-body-3">
