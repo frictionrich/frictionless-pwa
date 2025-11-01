@@ -236,15 +236,15 @@ export default function ReadinessPage() {
                       Want to improve your score?
                     </p>
                     <p className="text-body-3 text-neutral-grey">
-                      Upload an updated pitch deck to get a new assessment
+                      Contact Frictionless for help!
                     </p>
                   </div>
                   <Button
                     variant="primary"
                     size="medium"
-                    onClick={() => router.push('/dashboard/startup')}
+                    onClick={() => window.open('mailto:support@frictionless.com', '_blank')}
                   >
-                    Upload New Deck
+                    Get Help
                   </Button>
                 </div>
               </CardContent>
