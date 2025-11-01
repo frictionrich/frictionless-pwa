@@ -58,6 +58,7 @@ Run these SQL files in order in your Supabase SQL Editor:
 6. database/20251031f-fix-readiness-assessment-fields.sql
 7. database/20251031g-add-investor-ai-fields.sql
 8. database/20251031h-change-readiness-scores-to-numeric.sql
+9. database/20251031i-add-alamo-angel-investors.sql
 ```
 
 ### 2. Load Mock Data (Optional)
