@@ -82,6 +82,53 @@ export default function StartupDashboard() {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
+  // Check if profile is empty (no AI analysis done)
+  const hasProfileData = profile && (
+    profile.company_name ||
+    profile.industry ||
+    profile.stage ||
+    profile.readiness_score
+  );
+
+  // If no profile data and no matches, show upload prompt only
+  if (!hasProfileData && matches.length === 0) {
+    return (
+      <div className="flex h-screen overflow-hidden">
+        <Sidebar role="startup" userName={user?.user_metadata?.name} userEmail={user?.email} />
+
+        <main className="flex-1 overflow-y-auto bg-neutral-silver">
+          <div className="container max-w-7xl mx-auto px-6 py-8">
+            <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+              <Card className="max-w-2xl w-full">
+                <CardContent className="text-center py-12">
+                  <div className="mb-6">
+                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-tint-5 flex items-center justify-center">
+                      <span className="text-4xl">📄</span>
+                    </div>
+                    <h2 className="text-h2 font-semibold mb-3">Upload Your Pitch Deck</h2>
+                    <p className="text-body-2 text-neutral-grey mb-6">
+                      Get started by uploading your pitch deck. Our AI will analyze it and match you with relevant investors.
+                    </p>
+                  </div>
+                  <Button
+                    variant="primary"
+                    size="large"
+                    onClick={() => router.push('/onboarding/startup')}
+                  >
+                    Upload Pitch Deck
+                  </Button>
+                  <p className="text-body-3 text-neutral-grey mt-4">
+                    Supported format: PDF (max 4.5MB)
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   // Format ticket size
   const formatTicketSize = (min?: number, max?: number) => {
     if (!min && !max) return 'Not specified';
