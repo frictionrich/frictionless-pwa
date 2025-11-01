@@ -129,7 +129,7 @@ export default function InvestorDashboard() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-5 gap-4 text-body-3 text-neutral-grey border-b border-neutral-silver pb-2">
                     <div className="col-span-2">Name</div>
-                    <div>ROI</div>
+                    <div>Sector</div>
                     <div>Raised</div>
                     <div>Readiness Score</div>
                     <div>Match</div>
@@ -139,19 +139,19 @@ export default function InvestorDashboard() {
                       <div className="col-span-2">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
-                            {startup.name.charAt(0)}
+                            {startup.company_name?.charAt(0) || '?'}
                           </div>
                           <div>
-                            <p className="text-body-2-medium text-neutral-black">{startup.name}</p>
-                            <p className="text-body-4 text-neutral-grey">{startup.website}</p>
+                            <p className="text-body-2-medium text-neutral-black">{startup.company_name || 'Unknown Company'}</p>
+                            <p className="text-body-4 text-neutral-grey">{startup.website || 'No website'}</p>
                           </div>
                         </div>
                       </div>
-                      <div className="text-body-3 text-neutral-grey">{startup.roi}</div>
-                      <div className="text-body-3 text-neutral-grey">{startup.raised}</div>
-                      <div className="text-body-3 text-neutral-grey">{startup.readiness}%</div>
+                      <div className="text-body-3 text-neutral-grey">{startup.sector || 'N/A'}</div>
+                      <div className="text-body-3 text-neutral-grey">{startup.total_raised ? formatCurrency(startup.total_raised) : 'N/A'}</div>
+                      <div className="text-body-3 text-neutral-grey">{startup.readiness_score ? `${Math.round(startup.readiness_score)}%` : 'N/A'}</div>
                       <div className="flex items-center justify-between">
-                        <MatchBadge percentage={startup.match} />
+                        <MatchBadge percentage={calculateMatch(startup)} />
                         <Button variant="tertiary" size="small">Connect</Button>
                       </div>
                     </div>
