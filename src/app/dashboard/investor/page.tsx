@@ -68,9 +68,12 @@ export default function InvestorDashboard() {
     return overlap ? 85 + Math.floor(Math.random() * 15) : 50 + Math.floor(Math.random() * 30);
   };
 
-  // Calculate stats
+  // Calculate real stats from data
   const startupCount = startups.length;
-  const highReadinessCount = startups.filter(s => (s.readiness_score || 0) >= 75).length;
+  const totalDeployable = profile?.ticket_size_max || 0;
+  const avgReadiness = startups.length > 0
+    ? Math.round(startups.reduce((sum, s) => sum + (s.readiness_score || 0), 0) / startups.length)
+    : 0;
 
   // Determine which startups to display
   const displayedStartups = showAllStartups ? startups : startups.slice(0, 3);
@@ -103,19 +106,23 @@ export default function InvestorDashboard() {
             <Card>
               <CardContent>
                 <p className="text-body-3 text-neutral-grey mb-2">Startup Matches</p>
-                <p className="text-h1 font-semibold">15</p>
+                <p className="text-h1 font-semibold">{startupCount}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent>
-                <p className="text-body-3 text-neutral-grey mb-2">Deployable</p>
-                <p className="text-h1 font-semibold">{formatCurrency(12000000)}</p>
+                <p className="text-body-3 text-neutral-grey mb-2">Max Ticket Size</p>
+                <p className="text-h1 font-semibold">
+                  {totalDeployable > 0 ? formatCurrency(totalDeployable) : 'Not set'}
+                </p>
               </CardContent>
             </Card>
             <Card>
               <CardContent>
                 <p className="text-body-3 text-neutral-grey mb-2">Avg. Readiness</p>
-                <p className="text-h1 font-semibold">78%</p>
+                <p className="text-h1 font-semibold">
+                  {avgReadiness > 0 ? `${avgReadiness}%` : 'No data'}
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -138,40 +145,54 @@ export default function InvestorDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-[2fr_1fr_1fr_1fr_0.8fr_0.8fr] gap-3 text-body-3 text-neutral-grey border-b border-neutral-silver pb-2">
-                    <div>Name</div>
-                    <div>Sector</div>
-                    <div>Raised</div>
-                    <div>Readiness Score</div>
-                    <div>Match</div>
-                    <div></div>
+                {startups.length === 0 ? (
+                  <div className="py-12 text-center">
+                    <div className="mb-4">
+                      <svg className="w-16 h-16 mx-auto text-neutral-grey" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-body-2 text-neutral-grey mb-2">No startup matches yet</p>
+                    <p className="text-body-3 text-neutral-light-grey">
+                      Startups will appear here as they join the platform
+                    </p>
                   </div>
-                  {displayedStartups.map((startup) => (
-                    <div key={startup.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_0.8fr_0.8fr] gap-3 items-center py-3 border-b border-neutral-silver last:border-0">
-                      <div>
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium flex-shrink-0">
-                            {startup.company_name?.charAt(0) || '?'}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-body-2-medium text-neutral-black truncate">{startup.company_name || 'Unknown Company'}</p>
-                            <p className="text-body-4 text-neutral-grey truncate">{startup.website || 'No website'}</p>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-[2fr_1fr_1fr_1fr_0.8fr_0.8fr] gap-3 text-body-3 text-neutral-grey border-b border-neutral-silver pb-2">
+                      <div>Name</div>
+                      <div>Sector</div>
+                      <div>Raised</div>
+                      <div>Readiness Score</div>
+                      <div>Match</div>
+                      <div></div>
+                    </div>
+                    {displayedStartups.map((startup) => (
+                      <div key={startup.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_0.8fr_0.8fr] gap-3 items-center py-3 border-b border-neutral-silver last:border-0">
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium flex-shrink-0">
+                              {startup.company_name?.charAt(0) || '?'}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-body-2-medium text-neutral-black truncate">{startup.company_name || 'Unknown Company'}</p>
+                              <p className="text-body-4 text-neutral-grey truncate">{startup.website || 'No website'}</p>
+                            </div>
                           </div>
                         </div>
+                        <div className="text-body-3 text-neutral-grey truncate">{startup.sector || 'N/A'}</div>
+                        <div className="text-body-3 text-neutral-grey truncate">{startup.total_raised ? formatCurrency(startup.total_raised) : 'N/A'}</div>
+                        <div className="text-body-3 text-neutral-grey truncate">{startup.readiness_score ? `${Math.round(startup.readiness_score)}%` : 'N/A'}</div>
+                        <div>
+                          <MatchBadge percentage={calculateMatch(startup)} />
+                        </div>
+                        <div>
+                          <Button variant="tertiary" size="small">Connect</Button>
+                        </div>
                       </div>
-                      <div className="text-body-3 text-neutral-grey truncate">{startup.sector || 'N/A'}</div>
-                      <div className="text-body-3 text-neutral-grey truncate">{startup.total_raised ? formatCurrency(startup.total_raised) : 'N/A'}</div>
-                      <div className="text-body-3 text-neutral-grey truncate">{startup.readiness_score ? `${Math.round(startup.readiness_score)}%` : 'N/A'}</div>
-                      <div>
-                        <MatchBadge percentage={calculateMatch(startup)} />
-                      </div>
-                      <div>
-                        <Button variant="tertiary" size="small">Connect</Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -181,15 +202,11 @@ export default function InvestorDashboard() {
                 <CardTitle>Activity</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="flex items-start gap-3 pb-4 border-b border-neutral-silver last:border-0">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-body-3 text-neutral-black">Startup A dolor sit amet consectetur.</p>
-                      </div>
-                    </div>
-                  ))}
+                <div className="py-8 text-center">
+                  <p className="text-body-2 text-neutral-grey">No recent activity</p>
+                  <p className="text-body-3 text-neutral-light-grey mt-2">
+                    Activity will appear here when you interact with startups
+                  </p>
                 </div>
               </CardContent>
             </Card>
