@@ -32,16 +32,36 @@ export default function InvestorDashboard() {
         .eq('user_id', user.id)
         .single();
 
-      // Load all startups from database
-      const { data: startupsData } = await supabase
-        .from('startup_profiles')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(7);
+      // Load matched startups for this investor
+      // Join matches table with startup_profiles to only get startups with matches
+      const { data: matchesData } = await supabase
+        .from('matches')
+        .select(`
+          match_percentage,
+          startup_id,
+          startup_profiles!matches_startup_id_fkey (
+            id,
+            user_id,
+            company_name,
+            website,
+            sector,
+            total_raised,
+            readiness_score,
+            created_at
+          )
+        `)
+        .eq('investor_id', user.id)
+        .order('match_percentage', { ascending: false });
+
+      // Flatten the data to include match_percentage with startup data
+      const startupsWithMatches = matchesData?.map(match => ({
+        ...match.startup_profiles,
+        match_percentage: match.match_percentage
+      })) || [];
 
       setUser(user);
       setProfile(profile);
-      setStartups(startupsData || []);
+      setStartups(startupsWithMatches);
       setLoading(false);
     }
 
@@ -52,20 +72,9 @@ export default function InvestorDashboard() {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  // Calculate match percentage (placeholder - will be replaced with real matching algorithm)
-  const calculateMatch = (startup: any) => {
-    // Simple match calculation based on sector overlap
-    // TODO: Implement full matching algorithm
-    if (!profile?.focus_sectors || !startup?.sector) return 0;
-
-    const investorSectors = profile.focus_sectors.map((s: string) => s.toLowerCase());
-    const startupSectors = startup.sector.toLowerCase().split('/');
-
-    const overlap = investorSectors.some((i: string) =>
-      startupSectors.some((s: string) => i.includes(s) || s.includes(i))
-    );
-
-    return overlap ? 85 + Math.floor(Math.random() * 15) : 50 + Math.floor(Math.random() * 30);
+  // Get match percentage from the startup data (already fetched from matches table)
+  const getMatchPercentage = (startup: any) => {
+    return startup.match_percentage || 0;
   };
 
   // Calculate real stats from data
@@ -184,7 +193,7 @@ export default function InvestorDashboard() {
                         <div className="text-body-3 text-neutral-grey truncate">{startup.total_raised ? formatCurrency(startup.total_raised) : 'N/A'}</div>
                         <div className="text-body-3 text-neutral-grey truncate">{startup.readiness_score ? `${Math.round(startup.readiness_score)}%` : 'N/A'}</div>
                         <div>
-                          <MatchBadge percentage={calculateMatch(startup)} />
+                          <MatchBadge percentage={getMatchPercentage(startup)} />
                         </div>
                         <div>
                           <Button variant="tertiary" size="small">Connect</Button>
