@@ -149,13 +149,13 @@ export default function StartupOnboardingPage() {
         const assessmentData = {
           startup_id: user.id,
           pitch_deck_path: pitchDeckUrl,
-          overall_score: analysis.readiness_assessment.overall_score || null,
-          formation: analysis.readiness_assessment.formation || null,
-          business_plan: analysis.readiness_assessment.business_plan || null,
-          pitch: analysis.readiness_assessment.pitch || null,
-          product: analysis.readiness_assessment.product || null,
-          technology: analysis.readiness_assessment.technology || null,
-          go_to_market: analysis.readiness_assessment.go_to_market || null,
+          overall_score: analysis.readiness_assessment.overall_score ? parseFloat(analysis.readiness_assessment.overall_score) : null,
+          formation: analysis.readiness_assessment.formation ? parseFloat(analysis.readiness_assessment.formation) : null,
+          business_plan: analysis.readiness_assessment.business_plan ? parseFloat(analysis.readiness_assessment.business_plan) : null,
+          pitch: analysis.readiness_assessment.pitch ? parseFloat(analysis.readiness_assessment.pitch) : null,
+          product: analysis.readiness_assessment.product ? parseFloat(analysis.readiness_assessment.product) : null,
+          technology: analysis.readiness_assessment.technology ? parseFloat(analysis.readiness_assessment.technology) : null,
+          go_to_market: analysis.readiness_assessment.go_to_market ? parseFloat(analysis.readiness_assessment.go_to_market) : null,
         };
 
         console.log('Assessment data to insert:', JSON.stringify(assessmentData, null, 2));

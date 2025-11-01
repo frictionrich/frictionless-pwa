@@ -57,6 +57,7 @@ Run these SQL files in order in your Supabase SQL Editor:
 5. database/20251031e-auto-create-profiles-trigger.sql
 6. database/20251031f-fix-readiness-assessment-fields.sql
 7. database/20251031g-add-investor-ai-fields.sql
+8. database/20251031h-change-readiness-scores-to-numeric.sql
 ```
 
 ### 2. Load Mock Data (Optional)
