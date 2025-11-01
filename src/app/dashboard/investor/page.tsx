@@ -15,6 +15,7 @@ export default function InvestorDashboard() {
   const [profile, setProfile] = useState<any>(null);
   const [startups, setStartups] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAllStartups, setShowAllStartups] = useState(false);
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -71,6 +72,9 @@ export default function InvestorDashboard() {
   const startupCount = startups.length;
   const highReadinessCount = startups.filter(s => (s.readiness_score || 0) >= 75).length;
 
+  // Determine which startups to display
+  const displayedStartups = showAllStartups ? startups : startups.slice(0, 3);
+
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar role="investor" userName={user?.user_metadata?.name} userEmail={user?.email} />
@@ -122,7 +126,15 @@ export default function InvestorDashboard() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Startup Matches</CardTitle>
-                  <Button variant="tertiary" size="small">View All</Button>
+                  {!showAllStartups && startups.length > 3 && (
+                    <Button
+                      variant="tertiary"
+                      size="small"
+                      onClick={() => setShowAllStartups(true)}
+                    >
+                      View All
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
@@ -135,7 +147,7 @@ export default function InvestorDashboard() {
                     <div>Match</div>
                     <div></div>
                   </div>
-                  {startups.map((startup) => (
+                  {displayedStartups.map((startup) => (
                     <div key={startup.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_0.8fr_0.8fr] gap-3 items-center py-3 border-b border-neutral-silver last:border-0">
                       <div>
                         <div className="flex items-center gap-3">

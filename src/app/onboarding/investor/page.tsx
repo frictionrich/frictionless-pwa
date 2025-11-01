@@ -78,13 +78,18 @@ export default function InvestorOnboardingPage() {
 
       if (formData.investorDeckFile) {
         // Upload file
+        console.log('Uploading investor deck...');
         const fileExt = formData.investorDeckFile.name.split('.').pop();
         const fileName = `${user.id}/investor-deck-${Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from('investor-decks')
           .upload(fileName, formData.investorDeckFile);
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw uploadError;
+        }
+        console.log('File uploaded successfully');
 
         const { data: { publicUrl } } = supabase.storage
           .from('investor-decks')
@@ -95,28 +100,27 @@ export default function InvestorOnboardingPage() {
         // Analyze investor deck with AI if it's a PDF
         if (fileExt?.toLowerCase() === 'pdf') {
           try {
-            const fileReader = new FileReader();
-            const fileContent = await new Promise<string>((resolve, reject) => {
-              fileReader.onload = () => {
-                const text = fileReader.result as string;
-                resolve(text);
-              };
-              fileReader.onerror = reject;
-              fileReader.readAsText(formData.investorDeckFile as File);
-            });
+            console.log('Starting AI analysis...');
 
+            // Send PDF file as multipart/form-data
+            const formDataToSend = new FormData();
+            formDataToSend.append('file', formData.investorDeckFile as File);
+
+            console.log('Calling API with PDF file...');
             const analysisResponse = await fetch('/api/analyze-investor-deck', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                content: fileContent,
-                fileName: formData.investorDeckFile.name,
-              }),
+              body: formDataToSend, // Send as FormData, not JSON
             });
 
+            console.log('API response status:', analysisResponse.status);
             if (analysisResponse.ok) {
               const result = await analysisResponse.json();
               analysis = result.analysis;
+              console.log('Analysis result:', analysis);
+            } else {
+              const errorData = await analysisResponse.json().catch(() => ({ error: 'Could not parse error response' }));
+              console.error('AI analysis failed with status:', analysisResponse.status);
+              console.error('Error details:', errorData);
             }
           } catch (analysisError) {
             console.error('AI analysis failed:', analysisError);
@@ -126,22 +130,33 @@ export default function InvestorOnboardingPage() {
       }
 
       // Create or update investor profile with AI-extracted data
-      const { error: investorError } = await supabase
-        .from('investor_profiles')
-        .upsert({
-          user_id: user.id,
-          organization_name: analysis?.fund_name || formData.organizationName,
-          website: formData.website,
-          investor_deck_url: investorDeckUrl,
-          focus_sectors: analysis?.sector_focus?.length > 0 ? analysis.sector_focus : formData.focusSectors,
-          focus_stages: analysis?.stage_focus?.length > 0 ? analysis.stage_focus : formData.focusStages,
-          ticket_size_min: formData.ticketSizeMin ? parseInt(formData.ticketSizeMin) : null,
-          ticket_size_max: formData.ticketSizeMax ? parseInt(formData.ticketSizeMax) : null,
-        }, {
-          onConflict: 'user_id'
-        });
+      const profileData = {
+        user_id: user.id,
+        organization_name: analysis?.fund_name || formData.organizationName,
+        website: formData.website,
+        investor_deck_url: investorDeckUrl,
+        focus_sectors: analysis?.sector_focus?.length > 0 ? analysis.sector_focus : formData.focusSectors,
+        focus_stages: analysis?.stage_focus?.length > 0 ? analysis.stage_focus : formData.focusStages,
+        ticket_size_min: formData.ticketSizeMin ? parseInt(formData.ticketSizeMin) : null,
+        ticket_size_max: formData.ticketSizeMax ? parseInt(formData.ticketSizeMax) : null,
+      };
 
-      if (investorError) throw investorError;
+      console.log('Upserting investor profile with data:', profileData);
+
+      const { data: upsertData, error: investorError } = await supabase
+        .from('investor_profiles')
+        .upsert(profileData, {
+          onConflict: 'user_id',
+          ignoreDuplicates: false
+        })
+        .select();
+
+      console.log('Upsert result:', { data: upsertData, error: investorError });
+
+      if (investorError) {
+        console.error('Investor profile upsert error:', investorError);
+        throw investorError;
+      }
 
       // Redirect to dashboard
       router.push('/dashboard/investor');
