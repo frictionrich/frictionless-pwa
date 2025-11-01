@@ -233,6 +233,50 @@ export interface Database {
           updated_at?: string
         }
       }
+      readiness_assessments: {
+        Row: {
+          id: string
+          startup_id: string
+          pitch_deck_path: string
+          overall_score: number | null
+          formation: number | null
+          business_plan: number | null
+          pitch: number | null
+          product_readiness: number | null
+          technology_maturity: number | null
+          go_to_market_readiness: number | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          startup_id: string
+          pitch_deck_path: string
+          overall_score?: number | null
+          formation?: number | null
+          business_plan?: number | null
+          pitch?: number | null
+          product_readiness?: number | null
+          technology_maturity?: number | null
+          go_to_market_readiness?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          startup_id?: string
+          pitch_deck_path?: string
+          overall_score?: number | null
+          formation?: number | null
+          business_plan?: number | null
+          pitch?: number | null
+          product_readiness?: number | null
+          technology_maturity?: number | null
+          go_to_market_readiness?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never

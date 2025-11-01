@@ -105,17 +105,19 @@ Please analyze it and extract:
 
   "readiness_assessment": {
     "overall_score": "number 0-100 (weighted average of all components)",
-    "foundational_setup": "number 0-100 (legal structure, IP, compliance)",
-    "team_readiness": "number 0-100 (team experience, completeness, commitment)",
-    "funding_strategy": "number 0-100 (clarity of ask, use of funds, financial projections)",
-    "financial_health": "number 0-100 (runway, burn rate, revenue metrics)",
+    "formation": "number 0-100 (legal structure, IP, compliance)",
+    "business_plan": "number 0-100 (maturity of revenue, unit costs, business model, expansion stratgey, distribution)",
+    "pitch": "number 0-100 (clarity of problem, solution, competition, ask, market, strategy)",
     "product_readiness": "number 0-100 (product maturity, features, user feedback)",
-    "tech_maturity": "number 0-100 (scalability, architecture, technical debt)",
+    "technology_maturity": "number 0-100 (scalability, architecture, technical debt)",
     "go_to_market_readiness": "number 0-100 (GTM strategy, customer acquisition, distribution)",
-    "storytelling_communication": "number 0-100 (pitch clarity, deck quality, narrative)",
-    "market_positioning": "number 0-100 (market opportunity, competitive position, timing)"
   }
 }
+
+
+
+Pitch (15%)
+
 
 
 🔹 PHASE 3 — OVERVIEW & READINESS
