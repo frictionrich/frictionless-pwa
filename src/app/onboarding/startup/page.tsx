@@ -235,6 +235,18 @@ export default function StartupOnboardingPage() {
 
       if (updateError) throw updateError;
 
+      // Calculate matches with all investors
+      try {
+        await fetch('/api/calculate-matches', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ startup_id: user.id }),
+        });
+      } catch (matchError) {
+        console.error('Error calculating matches:', matchError);
+        // Don't block redirect if matching fails
+      }
+
       // Redirect to dashboard
       router.push('/dashboard/startup');
     } catch (err: any) {
