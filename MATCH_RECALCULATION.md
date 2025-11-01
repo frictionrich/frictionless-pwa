@@ -64,22 +64,34 @@ CRON_SECRET=your_generated_secret_here
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-### Step 3: Add GitHub Secrets
+### Step 3: Add GitHub Secrets and Variables
 
 1. Go to your GitHub repository
 2. Navigate to **Settings** → **Secrets and variables** → **Actions**
-3. Click **New repository secret**
-4. Add the following secrets:
+
+#### Add Secret (Sensitive):
+3. Click the **Secrets** tab
+4. Click **New repository secret**
+5. Add:
 
 | Secret Name | Value | Example |
 |-------------|-------|---------|
-| `CRON_SECRET` | Same token as in Vercel | `abc123def456...` |
+| `CRON_SECRET` | Your generated token | `abc123def456...` |
+
+#### Add Variable (Public):
+6. Click the **Variables** tab
+7. Click **New repository variable**
+8. Add:
+
+| Variable Name | Value | Example |
+|---------------|-------|---------|
 | `NEXT_PUBLIC_SITE_URL` | Your production URL (no trailing slash) | `https://frictionless-pwa.vercel.app` |
 
 **Important Notes:**
-- `NEXT_PUBLIC_SITE_URL` should NOT have a trailing slash
-- Both secrets must be set in GitHub for the workflow to run
-- You can verify secrets are set by going to Settings → Secrets and variables → Actions
+- `CRON_SECRET` is stored as a **secret** because it's sensitive
+- `NEXT_PUBLIC_SITE_URL` is stored as a **variable** because it's public information
+- The URL should NOT have a trailing slash
+- You can view variables anytime, but secrets are hidden once saved
 
 ### Step 4: Enable the Workflow
 

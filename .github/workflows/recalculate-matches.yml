@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Recalculate all matches
         env:
-          SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
           echo "🔄 Starting match recalculation..."
