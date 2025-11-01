@@ -59,6 +59,7 @@ Run these SQL files in order in your Supabase SQL Editor:
 7. database/20251031g-add-investor-ai-fields.sql
 8. database/20251031h-change-readiness-scores-to-numeric.sql
 9. database/20251031i-add-alamo-angel-investors.sql
+10. database/20251031j-drop-readiness-columns-from-startup-profiles.sql
 ```
 
 ### 2. Load Mock Data (Optional)

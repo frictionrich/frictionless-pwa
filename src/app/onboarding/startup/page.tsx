@@ -114,7 +114,6 @@ export default function StartupOnboardingPage() {
           description: analysis?.value_proposition || analysis?.business_model || null,
           industry: analysis?.industry || null,
           stage: analysis?.stage || null,
-          readiness_score: analysis?.readiness_assessment?.overall_score || null,
         }, {
           onConflict: 'user_id'
         });

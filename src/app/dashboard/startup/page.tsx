@@ -16,6 +16,7 @@ export default function StartupDashboard() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [matches, setMatches] = useState<any[]>([]);
+  const [readinessAssessment, setReadinessAssessment] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showAllMatches, setShowAllMatches] = useState(false);
   const [lastDeckUploadedAt, setLastDeckUploadedAt] = useState<Date | null>(null);
@@ -78,6 +79,15 @@ export default function StartupDashboard() {
         console.error('Error loading matches:', matchesError);
       }
 
+      // Load the most recent readiness assessment
+      const { data: assessmentData } = await supabase
+        .from('readiness_assessments')
+        .select('*')
+        .eq('startup_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
       // Get the latest pitch deck upload timestamp from storage
       const { data: files, error: storageError } = await supabase
         .storage
@@ -98,6 +108,7 @@ export default function StartupDashboard() {
       setUser(user);
       setProfile(profile);
       setMatches(enrichedMatches);
+      setReadinessAssessment(assessmentData);
       setLoading(false);
     }
 
@@ -192,13 +203,30 @@ export default function StartupDashboard() {
               market_growth: analysis.market_growth,
               recommendations: analysis.recommendations,
               strategic_insights: analysis.strategic_insights,
-              readiness_assessment: analysis.readiness_assessment,
-              readiness_score: analysis.readiness_assessment?.overall_score,
               ai_analyzed_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             }, {
               onConflict: 'user_id'
             });
+
+          // Store readiness assessment in readiness_assessments table
+          if (analysis.readiness_assessment) {
+            await supabase
+              .from('readiness_assessments')
+              .upsert({
+                startup_id: user.id,
+                pitch_deck_path: publicUrl,
+                overall_score: analysis.readiness_assessment.overall_score ? parseFloat(analysis.readiness_assessment.overall_score) : null,
+                formation: analysis.readiness_assessment.formation ? parseFloat(analysis.readiness_assessment.formation) : null,
+                business_plan: analysis.readiness_assessment.business_plan ? parseFloat(analysis.readiness_assessment.business_plan) : null,
+                pitch: analysis.readiness_assessment.pitch ? parseFloat(analysis.readiness_assessment.pitch) : null,
+                product: analysis.readiness_assessment.product ? parseFloat(analysis.readiness_assessment.product) : null,
+                technology: analysis.readiness_assessment.technology ? parseFloat(analysis.readiness_assessment.technology) : null,
+                go_to_market: analysis.readiness_assessment.go_to_market ? parseFloat(analysis.readiness_assessment.go_to_market) : null,
+              }, {
+                onConflict: 'startup_id,pitch_deck_path'
+              });
+          }
         }
       } catch (analysisError) {
         console.error('AI analysis failed:', analysisError);
@@ -273,7 +301,7 @@ export default function StartupDashboard() {
     const investor = match.investor as any;
     return sum + (investor?.ticket_size_max || 500000);
   }, 0);
-  const readinessScore = profile?.readiness_score || 0;
+  const readinessScore = readinessAssessment?.overall_score || 0;
 
   // Determine which matches to display
   const displayedMatches = showAllMatches ? matches : matches.slice(0, 3);

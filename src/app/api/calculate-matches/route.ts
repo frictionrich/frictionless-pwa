@@ -32,6 +32,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get the most recent readiness assessment for readiness score
+    const { data: assessment } = await supabase
+      .from('readiness_assessments')
+      .select('overall_score')
+      .eq('startup_id', startup_id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    // Add readiness score to startup object for matching
+    startup.readiness_score = assessment?.overall_score || null;
+
     // Get all investor profiles
     const { data: investors, error: investorsError } = await supabase
       .from('investor_profiles')

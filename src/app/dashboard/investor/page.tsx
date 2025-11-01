@@ -46,18 +46,39 @@ export default function InvestorDashboard() {
             website,
             industry,
             total_raised,
-            readiness_score,
             created_at
           )
         `)
         .eq('investor_id', user.id)
         .order('match_percentage', { ascending: false });
 
-      // Flatten the data to include match_percentage with startup data
-      const startupsWithMatches = matchesData?.map(match => ({
-        ...match.startup_profiles,
-        match_percentage: match.match_percentage
-      })) || [];
+      // Get readiness scores for all matched startups
+      let startupsWithMatches: any[] = [];
+      if (matchesData && matchesData.length > 0) {
+        const startupIds = matchesData.map(m => m.startup_id);
+
+        // Fetch the most recent readiness assessment for each startup
+        const { data: assessments } = await supabase
+          .from('readiness_assessments')
+          .select('startup_id, overall_score, created_at')
+          .in('startup_id', startupIds);
+
+        // For each startup, find their most recent assessment
+        const assessmentMap = new Map();
+        assessments?.forEach(assessment => {
+          const existing = assessmentMap.get(assessment.startup_id);
+          if (!existing || new Date(assessment.created_at) > new Date(existing.created_at)) {
+            assessmentMap.set(assessment.startup_id, assessment);
+          }
+        });
+
+        // Flatten the data to include match_percentage and readiness_score with startup data
+        startupsWithMatches = matchesData.map(match => ({
+          ...match.startup_profiles,
+          match_percentage: match.match_percentage,
+          readiness_score: assessmentMap.get(match.startup_id)?.overall_score || null
+        }));
+      }
 
       setUser(user);
       setProfile(profile);
