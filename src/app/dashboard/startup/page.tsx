@@ -247,6 +247,14 @@ export default function StartupDashboard() {
                   <h4 className="text-body-2-medium mb-3">Next Steps</h4>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3 p-3 bg-tint-5 rounded-lg border border-tint-3">
+                      <span className="text-xl">📄</span>
+                      <div className="flex-1">
+                        <p className="text-body-3-medium text-neutral-black">Upload New Deck</p>
+                        <p className="text-body-4 text-neutral-grey">Update your pitch deck to improve your profile.</p>
+                      </div>
+                    </div>
+                    {/* TODO: Implement these features later */}
+                    {/* <div className="flex items-start gap-3 p-3 bg-neutral-silver rounded-lg">
                       <span className="text-xl">✨</span>
                       <div className="flex-1">
                         <p className="text-body-3-medium text-neutral-black">Improve Readiness</p>
@@ -266,7 +274,7 @@ export default function StartupDashboard() {
                         <p className="text-body-3-medium text-neutral-black">View Dealroom</p>
                         <p className="text-body-4 text-neutral-grey">Manage your active investor pipeline.</p>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </CardContent>

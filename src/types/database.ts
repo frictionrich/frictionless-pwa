@@ -43,6 +43,34 @@ export interface Database {
           sector: string | null
           stage: string | null
           readiness_score: number | null
+          // AI Analysis Fields
+          industry: string | null
+          headquarters: string | null
+          funding_ask: string | null
+          business_model: string | null
+          value_proposition: string | null
+          target_market: string | null
+          competitive_landscape: any[] | null
+          key_differentiators: any[] | null
+          key_challenges: any[] | null
+          team_size: number | null
+          team_members: any[] | null
+          mrr: number | null
+          revenue: number | null
+          burn_rate: number | null
+          runway_months: number | null
+          total_raised: number | null
+          valuation: number | null
+          traction: string | null
+          product_status: string | null
+          geography_focus: string[] | null
+          use_of_funds: string | null
+          market_size: string | null
+          market_growth: string | null
+          recommendations: any[] | null
+          strategic_insights: any[] | null
+          readiness_assessment: any | null
+          ai_analyzed_at: string | null
           created_at: string
           updated_at: string
         }
@@ -56,6 +84,34 @@ export interface Database {
           sector?: string | null
           stage?: string | null
           readiness_score?: number | null
+          // AI Analysis Fields
+          industry?: string | null
+          headquarters?: string | null
+          funding_ask?: string | null
+          business_model?: string | null
+          value_proposition?: string | null
+          target_market?: string | null
+          competitive_landscape?: any[] | null
+          key_differentiators?: any[] | null
+          key_challenges?: any[] | null
+          team_size?: number | null
+          team_members?: any[] | null
+          mrr?: number | null
+          revenue?: number | null
+          burn_rate?: number | null
+          runway_months?: number | null
+          total_raised?: number | null
+          valuation?: number | null
+          traction?: string | null
+          product_status?: string | null
+          geography_focus?: string[] | null
+          use_of_funds?: string | null
+          market_size?: string | null
+          market_growth?: string | null
+          recommendations?: any[] | null
+          strategic_insights?: any[] | null
+          readiness_assessment?: any | null
+          ai_analyzed_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -69,6 +125,34 @@ export interface Database {
           sector?: string | null
           stage?: string | null
           readiness_score?: number | null
+          // AI Analysis Fields
+          industry?: string | null
+          headquarters?: string | null
+          funding_ask?: string | null
+          business_model?: string | null
+          value_proposition?: string | null
+          target_market?: string | null
+          competitive_landscape?: any[] | null
+          key_differentiators?: any[] | null
+          key_challenges?: any[] | null
+          team_size?: number | null
+          team_members?: any[] | null
+          mrr?: number | null
+          revenue?: number | null
+          burn_rate?: number | null
+          runway_months?: number | null
+          total_raised?: number | null
+          valuation?: number | null
+          traction?: string | null
+          product_status?: string | null
+          geography_focus?: string[] | null
+          use_of_funds?: string | null
+          market_size?: string | null
+          market_growth?: string | null
+          recommendations?: any[] | null
+          strategic_insights?: any[] | null
+          readiness_assessment?: any | null
+          ai_analyzed_at?: string | null
           created_at?: string
           updated_at?: string
         }
