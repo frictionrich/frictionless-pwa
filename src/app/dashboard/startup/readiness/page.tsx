@@ -179,7 +179,7 @@ export default function ReadinessPage() {
                 <p className="text-body-2 text-neutral-grey mb-4">Overall Readiness Score</p>
                 <div className={`inline-flex items-center justify-center w-32 h-32 rounded-full ${getScoreBgColor(assessment.overall_score)} mb-4`}>
                   <span className={`text-5xl font-bold ${getScoreColor(assessment.overall_score)}`}>
-                    {assessment.overall_score || 0}
+                    {assessment.overall_score ? assessment.overall_score.toFixed(1) : '0.0'}
                   </span>
                 </div>
                 <p className="text-body-3 text-neutral-grey">
