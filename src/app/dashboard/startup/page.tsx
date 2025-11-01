@@ -19,6 +19,8 @@ export default function StartupDashboard() {
   const [showAllMatches, setShowAllMatches] = useState(false);
   const [lastDeckUploadedAt, setLastDeckUploadedAt] = useState<Date | null>(null);
   const [hasDeckUploaded, setHasDeckUploaded] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -97,6 +99,111 @@ export default function StartupDashboard() {
 
     loadDashboardData();
   }, [router]);
+
+  const handleDeckUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0] || !user) return;
+
+    const file = e.target.files[0];
+    const maxSize = 4.5 * 1024 * 1024; // 4.5MB in bytes
+
+    // Validate file size
+    if (file.size > maxSize) {
+      setUploadError('File size exceeds 4.5MB limit. Please upload a smaller file.');
+      return;
+    }
+
+    // Validate file type
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      setUploadError('Only PDF files are supported.');
+      return;
+    }
+
+    setUploadError('');
+    setUploading(true);
+
+    try {
+      // Upload file
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/pitch-deck-${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('pitch-decks')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('pitch-decks')
+        .getPublicUrl(fileName);
+
+      // Analyze pitch deck with AI
+      try {
+        const formDataToSend = new FormData();
+        formDataToSend.append('file', file);
+
+        const analysisResponse = await fetch('/api/analyze-pitch-deck', {
+          method: 'POST',
+          body: formDataToSend,
+        });
+
+        if (analysisResponse.ok) {
+          const result = await analysisResponse.json();
+          const analysis = result.analysis;
+
+          // Update startup profile with AI analysis
+          await supabase
+            .from('startup_profiles')
+            .upsert({
+              user_id: user.id,
+              pitch_deck_url: publicUrl,
+              company_name: analysis.company_name,
+              industry: analysis.industry,
+              stage: analysis.stage,
+              headquarters: analysis.headquarters,
+              funding_ask: analysis.funding_ask,
+              business_model: analysis.business_model,
+              value_proposition: analysis.value_proposition,
+              target_market: analysis.target_market,
+              competitive_landscape: analysis.competitive_landscape,
+              key_differentiators: analysis.key_differentiators,
+              key_challenges: analysis.key_challenges,
+              team_size: analysis.team_size,
+              team_members: analysis.team_members,
+              mrr: analysis.mrr,
+              revenue: analysis.revenue,
+              burn_rate: analysis.burn_rate,
+              runway_months: analysis.runway_months,
+              total_raised: analysis.total_raised,
+              valuation: analysis.valuation,
+              traction: analysis.traction,
+              product_status: analysis.product_status,
+              geography_focus: analysis.geography_focus,
+              use_of_funds: analysis.use_of_funds,
+              market_size: analysis.market_size,
+              market_growth: analysis.market_growth,
+              recommendations: analysis.recommendations,
+              strategic_insights: analysis.strategic_insights,
+              readiness_assessment: analysis.readiness_assessment,
+              readiness_score: analysis.readiness_assessment?.overall_score,
+              ai_analyzed_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }, {
+              onConflict: 'user_id'
+            });
+        }
+      } catch (analysisError) {
+        console.error('AI analysis failed:', analysisError);
+        // Continue without analysis - not critical
+      }
+
+      // Reload dashboard data to show updated information
+      setUploading(false);
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      setUploadError(error.message || 'Failed to upload pitch deck');
+      setUploading(false);
+    }
+  };
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -317,18 +424,33 @@ export default function StartupDashboard() {
                 <div className="border-t border-neutral-silver pt-4">
                   <h4 className="text-body-2-medium mb-3">Next Steps</h4>
                   <div className="space-y-3">
-                    <div className="flex items-start gap-3 p-3 bg-tint-5 rounded-lg border border-tint-3">
+                    <label className="flex items-start gap-3 p-3 bg-tint-5 rounded-lg border border-tint-3 cursor-pointer hover:bg-tint-6 transition-colors">
                       <span className="text-xl">📄</span>
                       <div className="flex-1">
-                        <p className="text-body-3-medium text-neutral-black">Upload New Deck</p>
+                        <p className="text-body-3-medium text-neutral-black">
+                          {uploading ? 'Uploading and analyzing...' : 'Upload New Deck'}
+                        </p>
                         <p className="text-body-4 text-neutral-grey">Update your pitch deck to improve your profile.</p>
-                        {lastDeckUploadedAt && (
+                        {lastDeckUploadedAt && !uploading && (
                           <p className="text-body-4 text-neutral-grey mt-1">
                             Last deck uploaded {formatDistanceToNow(lastDeckUploadedAt, { addSuffix: true })}
                           </p>
                         )}
+                        {uploadError && (
+                          <p className="text-body-4 text-red-600 mt-1">{uploadError}</p>
+                        )}
+                        {uploading && (
+                          <p className="text-body-4 text-primary mt-1">Please wait, this may take a minute...</p>
+                        )}
                       </div>
-                    </div>
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleDeckUpload}
+                        disabled={uploading}
+                        className="hidden"
+                      />
+                    </label>
                     {/* TODO: Implement these features later */}
                     {/* <div className="flex items-start gap-3 p-3 bg-neutral-silver rounded-lg">
                       <span className="text-xl">✨</span>
