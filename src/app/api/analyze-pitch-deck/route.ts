@@ -55,40 +55,30 @@ export async function POST(request: NextRequest) {
     // Extract text from PDF using pdf2json (simple, server-side friendly)
     let content: string;
     try {
-      console.log('Importing pdf2json...');
       // Use pdf2json which is designed for Node.js/serverless environments
       const pdf2jsonModule = await import('pdf2json');
       const PDFParser = (pdf2jsonModule as any).default || pdf2jsonModule;
-      
+
       // Create parser instance (constructor takes no arguments or optional boolean)
       const pdfParser = new PDFParser();
-      
+
       // Set up promise to wait for parsing completion
       const parsePromise = new Promise<string>((resolve, reject) => {
         pdfParser.on('pdfParser_dataError', (errData: any) => {
           console.error('PDF parsing error:', errData);
           reject(new Error(`PDF parsing error: ${errData.parserError}`));
         });
-        
+
         pdfParser.on('pdfParser_dataReady', (pdfData: any) => {
           // Extract text from all pages
           let fullText = '';
-          
-          console.log('PDF data structure:', {
-            hasPages: !!pdfData.Pages,
-            pagesCount: pdfData.Pages?.length || 0,
-            firstPageStructure: pdfData.Pages?.[0] ? Object.keys(pdfData.Pages[0]) : []
-          });
-          
+
           if (pdfData.Pages && pdfData.Pages.length > 0) {
             for (let i = 0; i < pdfData.Pages.length; i++) {
               const page = pdfData.Pages[i];
-              
+
               // Try different possible text structures
               if (page.Texts && Array.isArray(page.Texts) && page.Texts.length > 0) {
-                console.log(`Page ${i + 1}: Found ${page.Texts.length} text items`);
-                console.log(`First text item sample:`, JSON.stringify(page.Texts[0]).substring(0, 200));
-                
                 for (const text of page.Texts) {
                   // Check if text has R array (run array)
                   if (text.R && Array.isArray(text.R)) {
@@ -104,7 +94,7 @@ export async function POST(request: NextRequest) {
                         }
                       }
                     }
-                  } 
+                  }
                   // Sometimes text is directly in T property (without R array)
                   else if (text.T !== undefined && text.T !== null) {
                     try {
@@ -120,10 +110,8 @@ export async function POST(request: NextRequest) {
                     fullText += String(text.w) + ' ';
                   }
                 }
-              } else if (page.Texts && Array.isArray(page.Texts)) {
-                console.log(`Page ${i + 1}: Texts array exists but is empty`);
               }
-              
+
               // Also check if there's a FillTexts property
               if (page.FillTexts && Array.isArray(page.FillTexts)) {
                 for (const fillText of page.FillTexts) {
@@ -142,25 +130,22 @@ export async function POST(request: NextRequest) {
               }
             }
           }
-          
+
           const extractedText = fullText.trim();
-          console.log(`Extracted ${extractedText.length} characters from PDF`);
-          
+
           if (extractedText.length === 0) {
-            console.log('No text extracted. PDF structure sample:', JSON.stringify(pdfData).substring(0, 500));
+            console.error('No text extracted from PDF');
           }
-          
+
           resolve(extractedText);
         });
       });
-      
+
       // Parse the PDF buffer
-      console.log('Parsing PDF, buffer size:', uint8Array.length);
       pdfParser.parseBuffer(Buffer.from(uint8Array));
-      
+
       // Wait for parsing to complete
       content = await parsePromise;
-      console.log('PDF text extracted, length:', content.length);
     } catch (parseError: any) {
       console.error('PDF parsing error:', parseError);
       throw new Error(`Failed to parse PDF: ${parseError.message}`);
@@ -172,9 +157,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    console.log('Extracted text length:', content.length);
-    console.log('First 200 chars:', content.substring(0, 200));
 
     // Replace the placeholder in the prompt with the actual deck content
     const promptWithContent = PITCH_DECK_ANALYZER_PROMPT.replace('{{PITCH_DECK_TEXT}}', content);

@@ -55,7 +55,6 @@ export async function POST(request: NextRequest) {
     // Extract text from PDF using pdf2json (simple, server-side friendly)
     let content: string;
     try {
-      console.log('Importing pdf2json...');
       // Use pdf2json which is designed for Node.js/serverless environments
       const pdf2jsonModule = await import('pdf2json');
       const PDFParser = (pdf2jsonModule as any).default || pdf2jsonModule;
@@ -74,19 +73,12 @@ export async function POST(request: NextRequest) {
           // Extract text from all pages
           let fullText = '';
 
-          console.log('PDF data structure:', {
-            hasPages: !!pdfData.Pages,
-            pagesCount: pdfData.Pages?.length || 0,
-            firstPageStructure: pdfData.Pages?.[0] ? Object.keys(pdfData.Pages[0]) : []
-          });
-
           if (pdfData.Pages && pdfData.Pages.length > 0) {
             for (let i = 0; i < pdfData.Pages.length; i++) {
               const page = pdfData.Pages[i];
 
               // Try different possible text structures
               if (page.Texts && Array.isArray(page.Texts) && page.Texts.length > 0) {
-                console.log(`Page ${i + 1}: Found ${page.Texts.length} text items`);
 
                 for (const text of page.Texts) {
                   // Check if text has R array (run array)
@@ -136,10 +128,9 @@ export async function POST(request: NextRequest) {
           }
 
           const extractedText = fullText.trim();
-          console.log(`Extracted ${extractedText.length} characters from PDF`);
 
           if (extractedText.length === 0) {
-            console.log('No text extracted. PDF structure sample:', JSON.stringify(pdfData).substring(0, 500));
+            console.error('No text extracted from PDF');
           }
 
           resolve(extractedText);
@@ -147,12 +138,10 @@ export async function POST(request: NextRequest) {
       });
 
       // Parse the PDF buffer
-      console.log('Parsing PDF, buffer size:', uint8Array.length);
       pdfParser.parseBuffer(Buffer.from(uint8Array));
 
       // Wait for parsing to complete
       content = await parsePromise;
-      console.log('PDF text extracted, length:', content.length);
     } catch (parseError: any) {
       console.error('PDF parsing error:', parseError);
       throw new Error(`Failed to parse PDF: ${parseError.message}`);
@@ -164,9 +153,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    console.log('Extracted text length:', content.length);
-    console.log('First 200 chars:', content.substring(0, 200));
 
     // Replace the placeholder in the prompt with the actual deck content
     const promptWithContent = INVESTOR_DECK_ANALYZER_PROMPT.replace('{{INVESTOR_DECK_TEXT}}', content);

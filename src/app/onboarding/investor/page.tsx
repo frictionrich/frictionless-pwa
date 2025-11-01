@@ -90,7 +90,6 @@ export default function InvestorOnboardingPage() {
 
       if (formData.investorDeckFile) {
         // Upload file
-        console.log('Uploading investor deck...');
         const fileExt = formData.investorDeckFile.name.split('.').pop();
         const fileName = `${user.id}/investor-deck-${Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
@@ -101,7 +100,6 @@ export default function InvestorOnboardingPage() {
           console.error('Upload error:', uploadError);
           throw uploadError;
         }
-        console.log('File uploaded successfully');
 
         const { data: { publicUrl } } = supabase.storage
           .from('investor-decks')
@@ -112,26 +110,19 @@ export default function InvestorOnboardingPage() {
         // Analyze investor deck with AI if it's a PDF
         if (fileExt?.toLowerCase() === 'pdf') {
           try {
-            console.log('Starting AI analysis...');
-
             const formDataToSend = new FormData();
             formDataToSend.append('file', formData.investorDeckFile as File);
 
-            console.log('Calling API with PDF file...');
             const analysisResponse = await fetch('/api/analyze-investor-deck', {
               method: 'POST',
               body: formDataToSend,
             });
 
-            console.log('API response status:', analysisResponse.status);
             if (analysisResponse.ok) {
               const result = await analysisResponse.json();
               analysis = result.analysis;
-              console.log('Analysis result:', analysis);
             } else {
-              const errorData = await analysisResponse.json().catch(() => ({ error: 'Could not parse error response' }));
               console.error('AI analysis failed with status:', analysisResponse.status);
-              console.error('Error details:', errorData);
             }
           } catch (analysisError) {
             console.error('AI analysis failed:', analysisError);
@@ -165,24 +156,17 @@ export default function InvestorOnboardingPage() {
         ai_analyzed_at: analysis ? new Date().toISOString() : null,
       };
 
-      console.log('Upserting investor profile with data:', profileData);
-
-      const { data: upsertData, error: investorError } = await supabase
+      const { error: investorError } = await supabase
         .from('investor_profiles')
         .upsert(profileData, {
           onConflict: 'user_id',
           ignoreDuplicates: false
-        })
-        .select();
-
-      console.log('Upsert result:', { data: upsertData, error: investorError });
+        });
 
       if (investorError) {
         console.error('Investor profile upsert error:', investorError);
         throw investorError;
       }
-
-      console.log('Investor profile created successfully!');
 
       // Load the created profile to populate review form
       const { data: profile, error: profileError } = await supabase

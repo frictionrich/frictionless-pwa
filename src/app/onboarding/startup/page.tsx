@@ -62,7 +62,6 @@ export default function StartupOnboardingPage() {
 
       if (formData.pitchDeckFile) {
         // Upload file
-        console.log('Uploading pitch deck...');
         const fileExt = formData.pitchDeckFile.name.split('.').pop();
         const fileName = `${user.id}/pitch-deck-${Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
@@ -73,7 +72,6 @@ export default function StartupOnboardingPage() {
           console.error('Upload error:', uploadError);
           throw uploadError;
         }
-        console.log('File uploaded successfully');
 
         const { data: { publicUrl } } = supabase.storage
           .from('pitch-decks')
@@ -84,26 +82,19 @@ export default function StartupOnboardingPage() {
         // Analyze pitch deck with AI if it's a PDF
         if (fileExt?.toLowerCase() === 'pdf') {
           try {
-            console.log('Starting AI analysis...');
-
             const formDataToSend = new FormData();
             formDataToSend.append('file', formData.pitchDeckFile as File);
 
-            console.log('Calling API with PDF file...');
             const analysisResponse = await fetch('/api/analyze-pitch-deck', {
               method: 'POST',
               body: formDataToSend,
             });
 
-            console.log('API response status:', analysisResponse.status);
             if (analysisResponse.ok) {
               const result = await analysisResponse.json();
               analysis = result.analysis;
-              console.log('Analysis result:', analysis);
             } else {
-              const errorData = await analysisResponse.json().catch(() => ({ error: 'Could not parse error response' }));
               console.error('AI analysis failed with status:', analysisResponse.status);
-              console.error('Error details:', errorData);
             }
           } catch (analysisError) {
             console.error('AI analysis failed:', analysisError);
@@ -113,7 +104,6 @@ export default function StartupOnboardingPage() {
       }
 
       // Create or update startup profile with AI-extracted data using upsert
-      console.log('Creating startup profile...');
       const { error: startupError } = await supabase
         .from('startup_profiles')
         .upsert({
@@ -134,18 +124,8 @@ export default function StartupOnboardingPage() {
         throw startupError;
       }
 
-      console.log('Startup profile created successfully!');
-
       // Store readiness assessment if AI analysis was performed
-      console.log('Checking readiness assessment conditions:');
-      console.log('- analysis exists:', !!analysis);
-      console.log('- analysis.readiness_assessment exists:', !!analysis?.readiness_assessment);
-      console.log('- pitchDeckUrl exists:', !!pitchDeckUrl);
-      console.log('- Full analysis object:', JSON.stringify(analysis, null, 2));
-
       if (analysis?.readiness_assessment && pitchDeckUrl) {
-        console.log('Storing readiness assessment...');
-
         const assessmentData = {
           startup_id: user.id,
           pitch_deck_path: pitchDeckUrl,
@@ -158,31 +138,16 @@ export default function StartupOnboardingPage() {
           go_to_market: analysis.readiness_assessment.go_to_market ? parseFloat(analysis.readiness_assessment.go_to_market) : null,
         };
 
-        console.log('Assessment data to insert:', JSON.stringify(assessmentData, null, 2));
-
-        const { data: insertedData, error: assessmentError } = await supabase
+        const { error: assessmentError } = await supabase
           .from('readiness_assessments')
           .upsert(assessmentData, {
             onConflict: 'startup_id,pitch_deck_path'
-          })
-          .select();
+          });
 
         if (assessmentError) {
           console.error('Readiness assessment error:', assessmentError);
-          console.error('Error code:', assessmentError.code);
-          console.error('Error message:', assessmentError.message);
-          console.error('Error details:', assessmentError.details);
-          console.error('Error hint:', assessmentError.hint);
           // Don't throw - this is not critical, continue with onboarding
-        } else {
-          console.log('Readiness assessment stored successfully!');
-          console.log('Inserted data:', insertedData);
         }
-      } else {
-        console.log('Skipping readiness assessment storage - conditions not met');
-        if (!analysis) console.log('  - No analysis object');
-        if (!analysis?.readiness_assessment) console.log('  - No readiness_assessment in analysis');
-        if (!pitchDeckUrl) console.log('  - No pitchDeckUrl');
       }
 
       // Load the created profile to populate review form
