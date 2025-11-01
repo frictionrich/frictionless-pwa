@@ -125,10 +125,10 @@ export default function InvestorOnboardingPage() {
         }
       }
 
-      // Create investor profile with AI-extracted data
+      // Create or update investor profile with AI-extracted data
       const { error: investorError } = await supabase
         .from('investor_profiles')
-        .insert({
+        .upsert({
           user_id: user.id,
           organization_name: analysis?.fund_name || formData.organizationName,
           website: formData.website,
@@ -137,6 +137,8 @@ export default function InvestorOnboardingPage() {
           focus_stages: analysis?.stage_focus?.length > 0 ? analysis.stage_focus : formData.focusStages,
           ticket_size_min: formData.ticketSizeMin ? parseInt(formData.ticketSizeMin) : null,
           ticket_size_max: formData.ticketSizeMax ? parseInt(formData.ticketSizeMax) : null,
+        }, {
+          onConflict: 'user_id'
         });
 
       if (investorError) throw investorError;
