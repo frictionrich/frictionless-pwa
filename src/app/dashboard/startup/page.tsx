@@ -15,6 +15,7 @@ export default function StartupDashboard() {
   const [profile, setProfile] = useState<any>(null);
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAllMatches, setShowAllMatches] = useState(false);
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -98,6 +99,9 @@ export default function StartupDashboard() {
   }, 0);
   const readinessScore = profile?.readiness_score || 0;
 
+  // Determine which matches to display
+  const displayedMatches = showAllMatches ? matches : matches.slice(0, 3);
+
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar role="startup" userName={user?.user_metadata?.name} userEmail={user?.email} />
@@ -149,7 +153,15 @@ export default function StartupDashboard() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Investor Matches</CardTitle>
-                  <Button variant="tertiary" size="small">View All</Button>
+                  {!showAllMatches && matches.length > 3 && (
+                    <Button
+                      variant="tertiary"
+                      size="small"
+                      onClick={() => setShowAllMatches(true)}
+                    >
+                      View All
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
@@ -161,49 +173,49 @@ export default function StartupDashboard() {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-5 gap-4 text-body-3 text-neutral-grey border-b border-neutral-silver pb-2">
-                      <div className="col-span-2">Name</div>
+                  <div className="space-y-4 overflow-x-auto">
+                    <div className="grid grid-cols-[2fr_1.2fr_1.5fr_1.3fr] gap-3 min-w-[640px] text-body-3 text-neutral-grey border-b border-neutral-silver pb-2">
+                      <div>Name</div>
                       <div>Potential Ticket</div>
                       <div>Profile Summary</div>
-                      <div>Match</div>
+                      <div className="text-right">Match</div>
                     </div>
-                    {matches.map((match) => {
+                    {displayedMatches.map((match) => {
                       const investor = match.investor as any;
                       if (!investor) return null;
 
                       return (
-                        <div key={match.id} className="grid grid-cols-5 gap-4 items-center py-3 border-b border-neutral-silver last:border-0">
-                          <div className="col-span-2">
+                        <div key={match.id} className="grid grid-cols-[2fr_1.2fr_1.5fr_1.3fr] gap-3 min-w-[640px] items-center py-3 border-b border-neutral-silver last:border-0">
+                          <div>
                             <div className="flex items-center gap-3">
                               {investor.logo_url ? (
                                 <img
                                   src={investor.logo_url}
                                   alt={investor.organization_name}
-                                  className="w-10 h-10 rounded-full object-cover"
+                                  className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                                 />
                               ) : (
-                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium flex-shrink-0">
                                   {investor.organization_name?.charAt(0) || '?'}
                                 </div>
                               )}
-                              <div>
-                                <p className="text-body-2-medium text-neutral-black">
+                              <div className="min-w-0">
+                                <p className="text-body-2-medium text-neutral-black truncate">
                                   {investor.organization_name || 'Unknown'}
                                 </p>
-                                <p className="text-body-4 text-neutral-grey">
+                                <p className="text-body-4 text-neutral-grey truncate">
                                   {investor.website || 'No website'}
                                 </p>
                               </div>
                             </div>
                           </div>
-                          <div className="text-body-3 text-neutral-grey">
+                          <div className="text-body-3 text-neutral-grey truncate">
                             {formatTicketSize(investor.ticket_size_min, investor.ticket_size_max)}
                           </div>
-                          <div className="text-body-3 text-neutral-grey">
+                          <div className="text-body-3 text-neutral-grey truncate">
                             {investor.focus_sectors?.slice(0, 2).join(', ') || 'No focus specified'}
                           </div>
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-end gap-2">
                             <MatchBadge percentage={match.match_percentage} />
                             <Button variant="tertiary" size="small">Connect</Button>
                           </div>
