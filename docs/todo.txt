@@ -1,15 +1,8 @@
-[] investor: allow skip on investor deck upload
-[] investor: fix deck upload
-[] investor: clear mock data
-[] investor: add side nav
-
-
 inflight
-[] Ensure deck is read and AI populates database
-[] go to onboarding flow if deck not updated
-[] add section for reuploading deck
-[] fix dashboard width
-[] fix dashboard buttons
+
+
+todo
+
 
 later
 [] add google sso

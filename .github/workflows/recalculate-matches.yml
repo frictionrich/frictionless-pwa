@@ -1,0 +1,37 @@
+name: Recalculate Matches Daily
+
+on:
+  # Run daily at 2 AM UTC
+  schedule:
+    - cron: '0 2 * * *'
+
+  # Allow manual triggering from GitHub Actions UI
+  workflow_dispatch:
+
+jobs:
+  recalculate-matches:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recalculate all matches
+        run: |
+          echo "🔄 Starting match recalculation..."
+
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            "${{ secrets.NEXT_PUBLIC_SITE_URL }}/api/recalculate-all-matches")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+
+          if [ "$http_code" -eq 200 ]; then
+            echo "✅ Match recalculation completed successfully"
+            exit 0
+          else
+            echo "❌ Match recalculation failed"
+            exit 1
+          fi
