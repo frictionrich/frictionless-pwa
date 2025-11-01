@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { MatchBadge } from '@/components/ui/MatchBadge';
 import { formatCurrency } from '@/lib/utils';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function StartupDashboard() {
   const router = useRouter();
@@ -112,7 +113,7 @@ export default function StartupDashboard() {
                   </div>
                   <Button
                     variant="primary"
-                    size="large"
+                    size="medium"
                     onClick={() => router.push('/onboarding/startup')}
                   >
                     Upload Pitch Deck
@@ -310,6 +311,11 @@ export default function StartupDashboard() {
                       <div className="flex-1">
                         <p className="text-body-3-medium text-neutral-black">Upload New Deck</p>
                         <p className="text-body-4 text-neutral-grey">Update your pitch deck to improve your profile.</p>
+                        {profile?.updated_at && (
+                          <p className="text-body-4 text-neutral-grey mt-1">
+                            Last uploaded {formatDistanceToNow(new Date(profile.updated_at), { addSuffix: true })}
+                          </p>
+                        )}
                       </div>
                     </div>
                     {/* TODO: Implement these features later */}
