@@ -71,19 +71,7 @@ export default function InvestorOnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Create or update profile using upsert
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
-          email: user.email!,
-          role: 'investor',
-        }, {
-          onConflict: 'id'
-        });
-
-      if (profileError) throw profileError;
-
+      // Profile is automatically created by database trigger on signup
       // Upload investor deck and analyze if provided
       let investorDeckUrl = null;
       let analysis = null;

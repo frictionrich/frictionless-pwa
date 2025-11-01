@@ -52,6 +52,9 @@ Run these SQL files in order in your Supabase SQL Editor:
 ```bash
 1. database/20251031a-add-profile-fields.sql
 2. database/20251031b-create-matches-table.sql
+3. database/20251031c-add-ai-analysis-fields.sql
+4. database/20251031d-create-readiness-assessment-table.sql
+5. database/20251031e-auto-create-profiles-trigger.sql
 ```
 
 ### 2. Load Mock Data (Optional)

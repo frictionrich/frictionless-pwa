@@ -50,24 +50,7 @@ export default function StartupOnboardingPage() {
       console.log('User:', user);
       if (!user) throw new Error('Not authenticated');
 
-      // Create or update profile using upsert
-      console.log('Creating profile...');
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
-          email: user.email!,
-          role: 'startup',
-        }, {
-          onConflict: 'id'
-        });
-
-      if (profileError) {
-        console.error('Profile error:', profileError);
-        throw profileError;
-      }
-      console.log('Profile created or already exists');
-
+      // Profile is automatically created by database trigger on signup
       // Upload pitch deck and analyze if provided
       let pitchDeckUrl = null;
       let analysis = null;
