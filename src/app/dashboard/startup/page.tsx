@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { MatchBadge } from '@/components/ui/MatchBadge';
 import { formatCurrency } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
+import { InvestorDetailModal } from '@/components/startup/InvestorDetailModal';
 
 export default function StartupDashboard() {
   const router = useRouter();
@@ -21,6 +22,9 @@ export default function StartupDashboard() {
   const [hasDeckUploaded, setHasDeckUploaded] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [selectedInvestor, setSelectedInvestor] = useState<any>(null);
+  const [selectedMatchPercentage, setSelectedMatchPercentage] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -99,6 +103,12 @@ export default function StartupDashboard() {
 
     loadDashboardData();
   }, [router]);
+
+  const handleConnectClick = (investor: any, matchPercentage: number) => {
+    setSelectedInvestor(investor);
+    setSelectedMatchPercentage(matchPercentage);
+    setIsModalOpen(true);
+  };
 
   const handleDeckUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0] || !user) return;
@@ -383,7 +393,13 @@ export default function StartupDashboard() {
                           </div>
                           <div className="flex items-center justify-end gap-2">
                             <MatchBadge percentage={match.match_percentage} />
-                            <Button variant="tertiary" size="small">Connect</Button>
+                            <Button
+                              variant="tertiary"
+                              size="small"
+                              onClick={() => handleConnectClick(investor, match.match_percentage)}
+                            >
+                              Connect
+                            </Button>
                           </div>
                         </div>
                       );
@@ -491,6 +507,14 @@ export default function StartupDashboard() {
           </Card>
         </div>
       </main>
+
+      {/* Investor Detail Modal */}
+      <InvestorDetailModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        investor={selectedInvestor}
+        matchPercentage={selectedMatchPercentage}
+      />
     </div>
   );
 }
