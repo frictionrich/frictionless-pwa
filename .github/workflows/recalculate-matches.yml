@@ -14,24 +14,34 @@ jobs:
 
     steps:
       - name: Recalculate all matches
+        env:
+          SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
           echo "🔄 Starting match recalculation..."
+          echo "Target URL: ${SITE_URL}/api/recalculate-all-matches"
 
+          # Make the API call and capture response with status code
           response=$(curl -s -w "\n%{http_code}" -X POST \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
             -H "Content-Type: application/json" \
-            "${{ secrets.NEXT_PUBLIC_SITE_URL }}/api/recalculate-all-matches")
+            "${SITE_URL}/api/recalculate-all-matches")
 
+          # Extract HTTP status code (last line)
           http_code=$(echo "$response" | tail -n1)
+
+          # Extract response body (everything except last line)
           body=$(echo "$response" | sed '$d')
 
           echo "HTTP Status: $http_code"
-          echo "Response: $body"
+          echo "Response Body:"
+          echo "$body"
 
+          # Check if the request was successful
           if [ "$http_code" -eq 200 ]; then
             echo "✅ Match recalculation completed successfully"
             exit 0
           else
-            echo "❌ Match recalculation failed"
+            echo "❌ Match recalculation failed with status $http_code"
             exit 1
           fi

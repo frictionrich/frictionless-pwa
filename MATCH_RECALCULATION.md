@@ -71,10 +71,15 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 3. Click **New repository secret**
 4. Add the following secrets:
 
-| Secret Name | Value |
-|-------------|-------|
-| `CRON_SECRET` | Same token as in Vercel |
-| `NEXT_PUBLIC_SITE_URL` | Your production URL |
+| Secret Name | Value | Example |
+|-------------|-------|---------|
+| `CRON_SECRET` | Same token as in Vercel | `abc123def456...` |
+| `NEXT_PUBLIC_SITE_URL` | Your production URL (no trailing slash) | `https://frictionless-pwa.vercel.app` |
+
+**Important Notes:**
+- `NEXT_PUBLIC_SITE_URL` should NOT have a trailing slash
+- Both secrets must be set in GitHub for the workflow to run
+- You can verify secrets are set by going to Settings → Secrets and variables → Actions
 
 ### Step 4: Enable the Workflow
 
