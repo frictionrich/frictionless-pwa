@@ -131,10 +131,10 @@ export default function StartupOnboardingPage() {
       }
 
       console.log('Startup profile created successfully!');
-      console.log('Redirecting to dashboard...');
+      console.log('Redirecting to review page...');
 
-      // Redirect to dashboard
-      router.push('/dashboard/startup');
+      // Redirect to review page to confirm AI-extracted data
+      router.push('/onboarding/startup/review');
     } catch (err: any) {
       console.error('Error in handleSubmit:', err);
       setError(err.message);

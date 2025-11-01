@@ -171,8 +171,11 @@ export default function InvestorOnboardingPage() {
         throw investorError;
       }
 
-      // Redirect to dashboard
-      router.push('/dashboard/investor');
+      console.log('Investor profile created successfully!');
+      console.log('Redirecting to review page...');
+
+      // Redirect to review page to confirm AI-extracted data
+      router.push('/onboarding/investor/review');
     } catch (err: any) {
       setError(err.message);
     } finally {
