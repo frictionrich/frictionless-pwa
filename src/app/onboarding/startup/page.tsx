@@ -110,27 +110,59 @@ export default function StartupOnboardingPage() {
       }
 
       // Create or update startup profile with AI-extracted data using upsert
+      console.log('💾 Storing startup profile with AI-extracted data...');
+      console.log('Analysis data available:', !!analysis);
+
       const { error: startupError } = await supabase
         .from('startup_profiles')
         .upsert({
           user_id: user.id,
           company_name: analysis?.company_name || formData.companyName,
-          website: formData.website,
+          website: formData.website || analysis?.website,
           pitch_deck_url: pitchDeckUrl,
           description: analysis?.value_proposition || analysis?.business_model || null,
           industry: analysis?.industry || null,
           stage: analysis?.stage || null,
+          headquarters: analysis?.headquarters || null,
+          funding_ask: analysis?.funding_ask || null,
+          business_model: analysis?.business_model || null,
+          value_proposition: analysis?.value_proposition || null,
+          target_market: analysis?.target_market || null,
+          competitive_landscape: analysis?.competitive_landscape || null,
+          key_differentiators: analysis?.key_differentiators || null,
+          key_challenges: analysis?.key_challenges || null,
+          team_size: analysis?.team_size || null,
+          team_members: analysis?.team_members || null,
+          mrr: analysis?.mrr || null,
+          revenue: analysis?.revenue || null,
+          burn_rate: analysis?.burn_rate || null,
+          runway_months: analysis?.runway_months || null,
+          total_raised: analysis?.total_raised || null,
+          valuation: analysis?.valuation || null,
+          traction: analysis?.traction || null,
+          product_status: analysis?.product_status || null,
+          geography_focus: analysis?.geography_focus || null,
+          use_of_funds: analysis?.use_of_funds || null,
+          market_size: analysis?.market_size || null,
+          market_growth: analysis?.market_growth || null,
+          recommendations: analysis?.recommendations || null,
+          strategic_insights: analysis?.strategic_insights || null,
+          ai_analyzed_at: analysis ? new Date().toISOString() : null,
+          updated_at: new Date().toISOString(),
         }, {
           onConflict: 'user_id'
         });
 
       if (startupError) {
-        console.error('Startup profile error:', startupError);
+        console.error('❌ Startup profile storage error:', startupError);
         throw startupError;
+      } else {
+        console.log('✅ Startup profile stored successfully');
       }
 
       // Store readiness assessment if AI analysis was performed
       if (analysis?.readiness_assessment && pitchDeckUrl) {
+        console.log('💾 Storing readiness assessment data...');
         const assessmentData = {
           startup_id: user.id,
           pitch_deck_path: pitchDeckUrl,
@@ -143,6 +175,8 @@ export default function StartupOnboardingPage() {
           go_to_market: analysis.readiness_assessment.go_to_market ? parseFloat(analysis.readiness_assessment.go_to_market) : null,
         };
 
+        console.log('Assessment data to store:', assessmentData);
+
         const { error: assessmentError } = await supabase
           .from('readiness_assessments')
           .upsert(assessmentData, {
@@ -150,9 +184,13 @@ export default function StartupOnboardingPage() {
           });
 
         if (assessmentError) {
-          console.error('Readiness assessment error:', assessmentError);
+          console.error('❌ Readiness assessment storage error:', assessmentError);
           // Don't throw - this is not critical, continue with onboarding
+        } else {
+          console.log('✅ Readiness assessment stored successfully');
         }
+      } else {
+        console.log('⚠️ Skipping readiness assessment storage - no analysis data or pitch deck URL');
       }
 
       // Load the created profile to populate review form
