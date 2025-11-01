@@ -258,12 +258,12 @@ export default function StartupDashboard() {
     );
   }
 
-  // Format ticket size
+  // Format ticket size (compressed for table display)
   const formatTicketSize = (min?: number, max?: number) => {
     if (!min && !max) return 'Not specified';
     if (!min && max) return `Up to ${formatCurrency(max)}`;
     if (min && !max) return `From ${formatCurrency(min)}`;
-    if (min && max) return `${formatCurrency(min)} - ${formatCurrency(max)}`;
+    if (min && max) return `${formatCurrency(min)}-${formatCurrency(max)}`;
     return 'Not specified';
   };
 
