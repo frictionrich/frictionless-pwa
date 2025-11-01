@@ -136,6 +136,33 @@ export default function StartupOnboardingPage() {
 
       console.log('Startup profile created successfully!');
 
+      // Store readiness assessment if AI analysis was performed
+      if (analysis?.readiness_assessment && pitchDeckUrl) {
+        console.log('Storing readiness assessment...');
+        const { error: assessmentError } = await supabase
+          .from('readiness_assessments')
+          .upsert({
+            startup_id: user.id,
+            pitch_deck_path: pitchDeckUrl,
+            overall_score: analysis.readiness_assessment.overall_score || null,
+            formation: analysis.readiness_assessment.formation || null,
+            business_plan: analysis.readiness_assessment.business_plan || null,
+            pitch: analysis.readiness_assessment.pitch || null,
+            product: analysis.readiness_assessment.product || null,
+            technology: analysis.readiness_assessment.technology || null,
+            go_to_market: analysis.readiness_assessment.go_to_market || null,
+          }, {
+            onConflict: 'startup_id,pitch_deck_path'
+          });
+
+        if (assessmentError) {
+          console.error('Readiness assessment error:', assessmentError);
+          // Don't throw - this is not critical, continue with onboarding
+        } else {
+          console.log('Readiness assessment stored successfully!');
+        }
+      }
+
       // Load the created profile to populate review form
       const { data: profile, error: profileError } = await supabase
         .from('startup_profiles')
