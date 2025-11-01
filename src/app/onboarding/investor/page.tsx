@@ -374,14 +374,25 @@ export default function InvestorOnboardingPage() {
                   >
                     Back
                   </Button>
-                  <Button
-                    variant="primary"
-                    size="normal"
-                    onClick={handleSubmit}
-                    loading={loading}
-                  >
-                    Complete Setup
-                  </Button>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="tertiary"
+                      size="normal"
+                      onClick={handleSubmit}
+                      loading={loading}
+                      disabled={loading}
+                    >
+                      Skip
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="normal"
+                      onClick={handleSubmit}
+                      loading={loading}
+                    >
+                      Complete Setup
+                    </Button>
+                  </div>
                 </div>
               </div>
             </>
