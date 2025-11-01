@@ -1,10 +1,39 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase/client';
+import { Sidebar } from '@/components/layout/Sidebar';
 import { Card, CardContent } from '@/components/ui/Card';
 
 export default function StartupsPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/auth/login');
+        return;
+      }
+      setUser(user);
+      setLoading(false);
+    }
+    loadUser();
+  }, [router]);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar role="investor" userName={user?.user_metadata?.name} userEmail={user?.email} />
+
+      <main className="flex-1 overflow-y-auto bg-neutral-silver">
+        <div className="container max-w-7xl mx-auto px-6 py-8">
       <div className="mb-8">
         <h1 className="text-h2 font-semibold mb-2">Startup Matches</h1>
         <p className="text-body-2 text-neutral-grey">
@@ -60,6 +89,8 @@ export default function StartupsPage() {
           </div>
         </CardContent>
       </Card>
+        </div>
+      </main>
     </div>
   );
 }

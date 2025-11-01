@@ -1,12 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { Sidebar } from '@/components/layout/Sidebar';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 
 export default function InvestorSettingsPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState('profile');
 
@@ -28,7 +33,12 @@ export default function InvestorSettingsPage() {
   const loadProfile = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        router.push('/auth/login');
+        return;
+      }
+
+      setUser(user);
 
       const { data: profile } = await supabase
         .from('investor_profiles')
@@ -50,6 +60,8 @@ export default function InvestorSettingsPage() {
       }
     } catch (error) {
       console.error('Error loading profile:', error);
+    } finally {
+      setPageLoading(false);
     }
   };
 
@@ -130,8 +142,16 @@ export default function InvestorSettingsPage() {
     { id: 'api', label: 'API' },
   ];
 
+  if (pageLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar role="investor" userName={user?.user_metadata?.name} userEmail={user?.email} />
+
+      <main className="flex-1 overflow-y-auto bg-neutral-silver">
+        <div className="container max-w-7xl mx-auto px-6 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-h2 font-semibold">Settings</h1>
       </div>
@@ -372,6 +392,8 @@ export default function InvestorSettingsPage() {
           )}
         </div>
       </div>
+        </div>
+      </main>
     </div>
   );
 }
