@@ -44,7 +44,7 @@ export default function InvestorDashboard() {
             user_id,
             company_name,
             website,
-            sector,
+            industry,
             total_raised,
             readiness_score,
             created_at
@@ -170,7 +170,7 @@ export default function InvestorDashboard() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-[2fr_1fr_1fr_1fr_0.8fr_0.8fr] gap-3 text-body-3 text-neutral-grey border-b border-neutral-silver pb-2">
                       <div>Name</div>
-                      <div>Sector</div>
+                      <div>Industry</div>
                       <div>Raised</div>
                       <div>Readiness Score</div>
                       <div>Match</div>
@@ -189,7 +189,7 @@ export default function InvestorDashboard() {
                             </div>
                           </div>
                         </div>
-                        <div className="text-body-3 text-neutral-grey truncate">{startup.sector || 'N/A'}</div>
+                        <div className="text-body-3 text-neutral-grey truncate">{startup.industry || 'N/A'}</div>
                         <div className="text-body-3 text-neutral-grey truncate">{startup.total_raised ? formatCurrency(startup.total_raised) : 'N/A'}</div>
                         <div className="text-body-3 text-neutral-grey truncate">{startup.readiness_score ? `${Math.round(startup.readiness_score)}%` : 'N/A'}</div>
                         <div>

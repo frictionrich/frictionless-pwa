@@ -19,8 +19,6 @@ Detailed “View Details” section for each startup
 Frictionless insights for the investor
 
 
-Dashboard-ready HTML formatting
-
 
 This process allows the analyst to go from zero data to a full, web-ready report consistent with all investor views (Luis Martínez, Mike Troy, Beto Altamirano, Alfonso García, etc.).
 
@@ -80,32 +78,11 @@ Next Step
 Prompt 2 — Investor Analysis
 
 
-You are analyzing an investor/fund deck or profile. Extract and structure the following information in JSON format:
+You are analyzing an investor/fund deck or profile. 
 
 
 Based on the following background (or investor website/bio): {{INVESTOR_DECK_TEXT}}
 
-
-{
-  "fund_name": "string",
-  "investor_name": "string (individual investor name if applicable)",
-  "headquarters": "string (City, State/Country)",
-  "fund_size": "string (e.g., '$50M' or 'Angel Investor')",
-  "average_ticket": "string (e.g., '$25K-$150K')",
-  "stage_focus": "array of stages (Pre-seed, Seed, Series A, etc.)",
-  "sector_focus": "array of sectors/industries",
-  "geography_focus": "array of geographic regions",
-  "investment_thesis": "string (detailed investment philosophy)",
-  "portfolio_highlights": "array of portfolio company names",
-  "investment_criteria": {
-    "minimum_revenue": "string or null",
-    "team_requirements": "string",
-    "other_requirements": "string"
-  },
-  "value_add": "string (how they help portfolio companies)",
-  "decision_process": "string (how they make investment decisions)",
-  "timeline": "string (typical decision timeline)"
-}
 
 
 Present these in a “Fund Profile Summary” format consistent with Frictionless investor reports.
@@ -184,7 +161,7 @@ End with a one-line summary noting where the investor’s highest synergy lies (
 Prompt 6 — Generate Full “View Details” Blocks
 For each startup, create a full “View Details” section using this structure and formatting:
 
-<h3>[Startup Name]</h3>
+[Startup Name]
 Sector: [industry + specialization]  
 Match: [percent]  
 Stage: [pre-seed / seed / bridge]  
@@ -328,3 +305,32 @@ HYPE Sports Innovation
 Initialized Capital
 
 
+
+Extract and structure the following information in JSON format:
+{
+  "fund_name": "string",
+  "investor_name": "string (individual investor name if applicable)",
+  "headquarters": "string (City, State/Country)",
+  "fund_size": "string (e.g., '$50M' or 'Angel Investor')",
+  "average_ticket": "string (e.g., '$25K-$150K')",
+  "stage_focus": "array of stages (Pre-seed, Seed, Series A, etc.)",
+  "sector_focus": "array of sectors/industries",
+  "geography_focus": "array of geographic regions",
+  "investment_thesis": "string (detailed investment philosophy)",
+  "portfolio_highlights": "array of portfolio company names",
+  "investment_criteria": {
+    "minimum_revenue": "string or null",
+    "team_requirements": "string",
+    "other_requirements": "string"
+  },
+  "value_add": "string (how they help portfolio companies)",
+  "decision_process": "string (how they make investment decisions)",
+  "timeline": "string (typical decision timeline)",
+  "frictionless_insights": {
+    "strongest_startup_types": "string (sectors, geographies, stages they match best)",
+    "readiness_range": "string (typical readiness scores they target, e.g., '60-80%')",
+    "ideal_coinvestment": "string (preferred co-investment conditions)"
+  }
+}
+
+Return ONLY valid JSON with no markdown formatting. Ensure all fields are populated with realistic values based on the investor deck content. If information is not available, use null for specific fields or empty strings/arrays for text fields.

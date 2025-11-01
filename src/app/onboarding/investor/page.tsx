@@ -133,12 +133,25 @@ export default function InvestorOnboardingPage() {
       const profileData = {
         user_id: user.id,
         organization_name: analysis?.fund_name || formData.organizationName,
+        investor_name: analysis?.investor_name || null,
         website: formData.website,
         investor_deck_url: investorDeckUrl,
+        headquarters: analysis?.headquarters || null,
+        fund_size: analysis?.fund_size || null,
+        average_ticket: analysis?.average_ticket || null,
         focus_sectors: analysis?.sector_focus?.length > 0 ? analysis.sector_focus : formData.focusSectors,
         focus_stages: analysis?.stage_focus?.length > 0 ? analysis.stage_focus : formData.focusStages,
+        geography_focus: analysis?.geography_focus || null,
         ticket_size_min: formData.ticketSizeMin ? parseInt(formData.ticketSizeMin) : null,
         ticket_size_max: formData.ticketSizeMax ? parseInt(formData.ticketSizeMax) : null,
+        investment_thesis: analysis?.investment_thesis || null,
+        portfolio_highlights: analysis?.portfolio_highlights || null,
+        investment_criteria: analysis?.investment_criteria || null,
+        value_add: analysis?.value_add || null,
+        decision_process: analysis?.decision_process || null,
+        timeline: analysis?.timeline || null,
+        frictionless_insights: analysis?.frictionless_insights || null,
+        ai_analyzed_at: analysis ? new Date().toISOString() : null,
       };
 
       console.log('Upserting investor profile with data:', profileData);

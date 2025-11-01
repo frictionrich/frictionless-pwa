@@ -50,18 +50,18 @@ Analyze the pitch deck and extract the following information in valid JSON forma
   "strategic_insights": "array of 2-4 bullet point strings providing strategic observations",
 
   "readiness_assessment": {
-    "overall_score": "number 0-100 (weighted average of all components using Frictionless model: Formation 10%, Business Plan 20%, Pitch 15%, Product 15%, Technology 15%, Go-To-Market 25%)",
-    "foundational_setup": "number 0-100 (legal structure, IP, compliance)",
-    "team_readiness": "number 0-100 (team experience, completeness, commitment)",
-    "funding_strategy": "number 0-100 (clarity of ask, use of funds, financial projections)",
-    "financial_health": "number 0-100 (runway, burn rate, revenue metrics)",
-    "product_readiness": "number 0-100 (product maturity, features, user feedback)",
-    "tech_maturity": "number 0-100 (scalability, architecture, technical debt)",
-    "go_to_market_readiness": "number 0-100 (GTM strategy, customer acquisition, distribution)",
-    "storytelling_communication": "number 0-100 (pitch clarity, deck quality, narrative)",
-    "market_positioning": "number 0-100 (market opportunity, competitive position, timing)"
+    "overall_score": "number 0-100 (weighted average: Formation 10%, Business Plan 20%, Pitch 15%, Product 15%, Technology 15%, Go-To-Market 25%)",
+    "formation": "number 0-100 (legal structure, IP, compliance) - 10% weight",
+    "business_plan": "number 0-100 (maturity of revenue, unit costs, business model, expansion strategy, distribution) - 20% weight",
+    "pitch": "number 0-100 (clarity of problem, solution, competition, ask, market, strategy) - 15% weight",
+    "product": "number 0-100 (product maturity, features, user feedback, MVP status) - 15% weight",
+    "technology": "number 0-100 (scalability, architecture, technical debt, tech stack) - 15% weight",
+    "go_to_market": "number 0-100 (GTM strategy, customer acquisition, distribution, sales channels) - 25% weight"
   }
 }
+
+IMPORTANT: Calculate the overall_score using the exact Frictionless weighting formula:
+Overall Score = (formation × 0.10) + (business_plan × 0.20) + (pitch × 0.15) + (product × 0.15) + (technology × 0.15) + (go_to_market × 0.25)
 
 Return ONLY valid JSON with no markdown formatting. Ensure all fields are populated with realistic values based on the pitch deck content. If information is not available, use null for numbers or empty strings/arrays for text fields.`;
 

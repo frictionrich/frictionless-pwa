@@ -40,7 +40,24 @@ Analyze the investor deck or profile and extract the following information in va
   }
 }
 
-Return ONLY valid JSON with no markdown formatting. Ensure all fields are populated with realistic values based on the investor deck content. If information is not available, use null for specific fields or empty strings/arrays for text fields.`;
+Return ONLY valid JSON with no markdown formatting. Ensure all fields are populated with realistic values based on the investor deck content. If information is not available, use null for specific fields or empty strings/arrays for text fields.
+
+IMPORTANT: Populate all fields based on the deck content:
+- fund_name: Organization or fund name
+- investor_name: Individual's name if it's a personal investor
+- headquarters: City, State/Country
+- fund_size: Total AUM or investment capacity
+- average_ticket: Typical check size range
+- stage_focus: Investment stages (Pre-seed, Seed, Series A, etc.)
+- sector_focus: Target industries/sectors
+- geography_focus: Geographic preferences
+- investment_thesis: Investment philosophy and approach
+- portfolio_highlights: Notable portfolio companies
+- investment_criteria: Specific requirements (revenue, team, etc.)
+- value_add: How they support beyond capital
+- decision_process: Investment decision workflow
+- timeline: Typical time from pitch to close
+- frictionless_insights: Analysis of best-fit startup types`;
 
 export async function POST(request: NextRequest) {
   try {

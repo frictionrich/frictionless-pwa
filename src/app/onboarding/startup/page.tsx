@@ -118,7 +118,7 @@ export default function StartupOnboardingPage() {
           website: formData.website,
           pitch_deck_url: pitchDeckUrl,
           description: analysis?.value_proposition || analysis?.business_model || null,
-          sector: analysis?.industry || null,
+          industry: analysis?.industry || null,
           stage: analysis?.stage || null,
           readiness_score: analysis?.readiness_assessment?.overall_score || null,
         }, {
